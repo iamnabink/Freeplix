@@ -137,14 +137,16 @@ at runtime.
 
 ## Deployment
 
-Two workflows:
+Releases are tag-driven. Nothing deploys on a push or a pull request:
 
-- **`pages.yaml`** — every push to `main` rebuilds and republishes GitHub Pages.
-- **`release.yaml`** — pushing a `v*` tag runs the checks, cuts a GitHub
-  Release with the static bundle attached, and deploys the same build.
+```bash
+git tag v1.0.2 && git push origin v1.0.2
+```
 
-Set these repository secrets under **Settings → Secrets and variables →
-Actions**:
+`release.yaml` then runs `flutter analyze` and `flutter test`, builds the web
+bundle, attaches it to a GitHub Release as a zip, and publishes it to Pages.
+
+Repository secrets, under **Settings → Secrets and variables → Actions**:
 
 | Secret | Required | Purpose |
 | --- | --- | --- |
@@ -152,10 +154,25 @@ Actions**:
 | `TMDB_API_KEY` | fallback | TMDB v3 key |
 | `FREEPLIX_SOURCES` | no | JSON array of playback sources |
 
-Then set **Settings → Pages → Source** to **GitHub Actions**.
+> The TMDB key is compiled into the published bundle and is readable by anyone
+> who opens devtools. A repository secret keeps it out of the source and the
+> build logs, but it cannot keep it out of the artifact — the browser needs the
+> key to call TMDB directly. This is inherent to every backend-less client, so
+> use a read-only key and rotate it if it is ever abused.
 
-Because Pages has no SPA rewrite, the build copies `index.html` to `404.html`
-so deep links reach the router instead of a Pages 404.
+Two pieces of one-time setup that the workflow token cannot do for itself:
+
+- **Enable Pages.** `GITHUB_TOKEN` is not allowed to create a Pages site, so
+  `enablement: true` fails on a repo that has never had Pages. Turn it on once
+  under **Settings → Pages → Source: GitHub Actions**.
+- **Allow tag deploys.** The `github-pages` environment only accepts
+  deployments from branches by default, so a `v*` tag is rejected. Add a
+  deployment branch policy for the `v*` **tag** under
+  **Settings → Environments → github-pages**.
+
+Because Pages has no SPA rewrite, the build copies `index.html` to `404.html`.
+Deep links return a 404 *status* while serving the app, which is what lets
+`/title/movie/603` resolve instead of hitting a Pages error page.
 
 ## Tests
 
