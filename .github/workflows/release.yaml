@@ -69,7 +69,7 @@ jobs:
           cd build/web
           zip -r "../../freeplix-web-${{ steps.version.outputs.value }}.zip" .
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: build/web
 
