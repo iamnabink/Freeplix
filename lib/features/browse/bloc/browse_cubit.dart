@@ -2,37 +2,21 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:freeplix/core/network/api_exception.dart';
 import 'package:freeplix/data/models/genre.dart';
+import 'package:freeplix/data/models/media_filter.dart';
 import 'package:freeplix/data/models/media_item.dart';
 import 'package:freeplix/data/models/media_type.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 
 enum BrowseStatus { initial, loading, ready, loadingMore, failure }
 
-enum BrowseSort {
-  popular('popularity.desc', 'Most popular'),
-  rated('vote_average.desc', 'Highest rated'),
-  newest('primary_release_date.desc', 'Newest first');
-
-  const BrowseSort(this.wire, this.label);
-
-  final String wire;
-  final String label;
-
-  /// TMDB names the release-date field differently for series.
-  String wireFor(MediaType type) =>
-      this == BrowseSort.newest && type == MediaType.tv
-      ? 'first_air_date.desc'
-      : wire;
-}
-
 class BrowseState extends Equatable {
   const BrowseState({
     this.status = BrowseStatus.initial,
     this.items = const [],
     this.genres = const [],
-    this.genreId,
-    this.sort = BrowseSort.popular,
+    this.filter = const MediaFilter(),
     this.page = 0,
+    this.totalResults = 0,
     this.hasMore = false,
     this.error,
   });
@@ -40,21 +24,26 @@ class BrowseState extends Equatable {
   final BrowseStatus status;
   final List<MediaItem> items;
   final List<Genre> genres;
-  final int? genreId;
-  final BrowseSort sort;
+  final MediaFilter filter;
   final int page;
+  final int totalResults;
   final bool hasMore;
   final String? error;
 
-  Genre? get activeGenre => genres.where((g) => g.id == genreId).firstOrNull;
+  bool get isBusy =>
+      status == BrowseStatus.loading || status == BrowseStatus.initial;
+
+  /// Genre objects for the ids in the filter, for the summary row.
+  List<Genre> get activeGenres =>
+      genres.where((g) => filter.genreIds.contains(g.id)).toList();
 
   BrowseState copyWith({
     BrowseStatus? status,
     List<MediaItem>? items,
     List<Genre>? genres,
-    int? Function()? genreId,
-    BrowseSort? sort,
+    MediaFilter? filter,
     int? page,
+    int? totalResults,
     bool? hasMore,
     String? error,
   }) {
@@ -62,9 +51,9 @@ class BrowseState extends Equatable {
       status: status ?? this.status,
       items: items ?? this.items,
       genres: genres ?? this.genres,
-      genreId: genreId == null ? this.genreId : genreId(),
-      sort: sort ?? this.sort,
+      filter: filter ?? this.filter,
       page: page ?? this.page,
+      totalResults: totalResults ?? this.totalResults,
       hasMore: hasMore ?? this.hasMore,
       error: error,
     );
@@ -75,9 +64,9 @@ class BrowseState extends Equatable {
     status,
     items,
     genres,
-    genreId,
-    sort,
+    filter,
     page,
+    totalResults,
     hasMore,
     error,
   ];
@@ -87,8 +76,8 @@ class BrowseCubit extends Cubit<BrowseState> {
   BrowseCubit({
     required this._repository,
     required this.type,
-    int? genreId,
-  }) : super(BrowseState(genreId: genreId));
+    MediaFilter initialFilter = const MediaFilter(),
+  }) : super(BrowseState(filter: initialFilter));
 
   final TmdbRepository _repository;
   final MediaType type;
@@ -104,17 +93,22 @@ class BrowseCubit extends Cubit<BrowseState> {
     }
   }
 
-  Future<void> selectGenre(int? id) async {
-    if (id == state.genreId) return;
-    emit(state.copyWith(genreId: () => id, status: BrowseStatus.loading));
+  /// Replaces the whole filter — what the filter sheet applies on close.
+  Future<void> applyFilter(MediaFilter filter) async {
+    if (filter == state.filter) return;
+    emit(state.copyWith(filter: filter, status: BrowseStatus.loading));
     await _fetch(reset: true);
   }
 
-  Future<void> selectSort(BrowseSort sort) async {
-    if (sort == state.sort) return;
-    emit(state.copyWith(sort: sort, status: BrowseStatus.loading));
-    await _fetch(reset: true);
-  }
+  Future<void> clearFilter() => applyFilter(state.filter.cleared());
+
+  Future<void> setSort(SortOption sort) =>
+      applyFilter(state.filter.copyWith(sort: sort));
+
+  /// Removes one genre from the summary row without opening the sheet.
+  Future<void> removeGenre(int id) => applyFilter(
+    state.filter.copyWith(genreIds: {...state.filter.genreIds}..remove(id)),
+  );
 
   Future<void> loadMore() async {
     if (!state.hasMore || state.status == BrowseStatus.loadingMore) return;
@@ -128,17 +122,15 @@ class BrowseCubit extends Cubit<BrowseState> {
       final result = await _repository.discover(
         type,
         page: page,
-        genreId: state.genreId,
-        sortBy: state.sort.wireFor(type),
+        filter: state.filter,
       );
-
-      final merged = reset ? result.items : [...state.items, ...result.items];
 
       emit(
         state.copyWith(
           status: BrowseStatus.ready,
-          items: merged,
+          items: reset ? result.items : [...state.items, ...result.items],
           page: result.page,
+          totalResults: result.totalResults,
           hasMore: result.hasMore,
         ),
       );

@@ -18,6 +18,7 @@ import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/details/bloc/details_cubit.dart';
 import 'package:freeplix/features/details/widgets/episode_list.dart';
 import 'package:freeplix/features/watch/bloc/watch_cubit.dart';
+import 'package:freeplix/features/watchlist/bloc/continue_watching_cubit.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -100,27 +101,70 @@ class WatchView extends HookWidget {
           final detail = state.detail;
           if (detail == null) return const LoadingView();
 
-          return CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: _PlayerBar(
-                  state: state,
-                  wide: wide.value,
-                  onToggleWide: () => wide.value = !wide.value,
-                ),
-              ),
-              SliverToBoxAdapter(child: _Stage(state: state, wide: wide.value)),
-              SliverToBoxAdapter(
-                child: PagePadding(
-                  vertical: Insets.lg,
-                  child: _BelowStage(state: state),
-                ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: Insets.xxl)),
-            ],
-          );
+          return _RecordProgress(state: state, child: _Body(state: state, wide: wide));
         },
       ),
+    );
+  }
+}
+
+/// Notes what was opened, so the home page can offer it back. Runs on the
+/// title and episode actually being played, not on every rebuild.
+class _RecordProgress extends HookWidget {
+  const _RecordProgress({required this.state, required this.child});
+
+  final WatchState state;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final detail = state.detail;
+    final cubit = context.read<ContinueWatchingCubit>();
+
+    useEffect(() {
+      if (detail != null) {
+        unawaited(
+          cubit.record(
+            detail,
+            season: state.season,
+            episode: state.episode,
+          ),
+        );
+      }
+      return null;
+    }, [detail?.id, state.season, state.episode]);
+
+    return child;
+  }
+}
+
+class _Body extends StatelessWidget {
+  const _Body({required this.state, required this.wide});
+
+  final WatchState state;
+  final ValueNotifier<bool> wide;
+
+  @override
+  Widget build(BuildContext context) {
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: _PlayerBar(
+            state: state,
+            wide: wide.value,
+            onToggleWide: () => wide.value = !wide.value,
+          ),
+        ),
+        SliverToBoxAdapter(child: _Stage(state: state, wide: wide.value)),
+        SliverToBoxAdapter(
+          child: PagePadding(
+            vertical: Insets.lg,
+            child: _BelowStage(state: state),
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: Insets.xxl)),
+      ],
     );
   }
 }
@@ -183,7 +227,7 @@ class _PlayerBar extends StatelessWidget {
                         switch (state.kind) {
                           PlaybackKind.source =>
                             state.activeSource?.name ?? 'Source',
-                          PlaybackKind.trailer => 'Official trailer',
+                          PlaybackKind.trailer => 'YouTube · Trailer',
                           PlaybackKind.nothing => 'Nothing to play',
                         },
                       ],

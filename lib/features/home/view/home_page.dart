@@ -8,6 +8,7 @@ import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/home/bloc/home_bloc.dart';
 import 'package:freeplix/features/home/widgets/hero_billboard.dart';
 import 'package:freeplix/features/watchlist/bloc/watchlist_cubit.dart';
+import 'package:freeplix/features/watchlist/widgets/continue_watching_row.dart';
 import 'package:freeplix/shell/view/app_footer.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
@@ -53,6 +54,12 @@ class HomeView extends StatelessWidget {
               )
             else
               const SliverToBoxAdapter(child: SizedBox(height: Insets.xl)),
+            const SliverToBoxAdapter(
+              child: PagePadding(
+                vertical: Insets.xl,
+                child: ContinueWatchingRow(),
+              ),
+            ),
             SliverPadding(
               padding: const EdgeInsets.only(top: Insets.xl),
               sliver: SliverList.separated(

@@ -1,6 +1,7 @@
 import 'package:freeplix/core/network/tmdb_client.dart';
 import 'package:freeplix/data/models/genre.dart';
 import 'package:freeplix/data/models/media_detail.dart';
+import 'package:freeplix/data/models/media_filter.dart';
 import 'package:freeplix/data/models/media_item.dart';
 import 'package:freeplix/data/models/media_type.dart';
 import 'package:freeplix/data/models/season.dart';
@@ -11,13 +12,19 @@ class MediaPage {
     required this.items,
     required this.page,
     required this.totalPages,
+    this.totalResults = 0,
   });
 
-  const MediaPage.empty() : items = const [], page = 0, totalPages = 0;
+  const MediaPage.empty()
+    : items = const [],
+      page = 0,
+      totalPages = 0,
+      totalResults = 0;
 
   final List<MediaItem> items;
   final int page;
   final int totalPages;
+  final int totalResults;
 
   bool get hasMore => page < totalPages;
 }
@@ -56,18 +63,12 @@ class TmdbRepository {
   Future<MediaPage> discover(
     MediaType type, {
     int page = 1,
-    int? genreId,
-    String sortBy = 'popularity.desc',
+    MediaFilter filter = const MediaFilter(),
   }) => _page(
     '/discover/${type.wire}',
     page: page,
     fallbackType: type,
-    query: {
-      'sort_by': sortBy,
-      'include_adult': false,
-      'vote_count.gte': 50,
-      'with_genres': ?genreId,
-    },
+    query: filter.toQuery(type),
   );
 
   Future<List<Genre>> genres(MediaType type) async {
@@ -129,6 +130,7 @@ class TmdbRepository {
       items: items,
       page: json['page'] as int? ?? page,
       totalPages: json['total_pages'] as int? ?? 1,
+      totalResults: json['total_results'] as int? ?? items.length,
     );
   }
 }

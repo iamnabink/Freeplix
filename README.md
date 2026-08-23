@@ -1,12 +1,12 @@
 # Freeplix
 
-An open source, ad-free movie and TV **catalogue**, built with Flutter and
+An open source movie and TV **catalogue**, built with Flutter and
 powered by the [TMDB API](https://www.themoviedb.org/). One codebase, web
 first; iOS and Android are wired up but not yet the focus.
 
 **Live:** https://iamnabink.github.io/Freeplix/
 
-No accounts. No backend. No tracking. No ads.
+An educational, non-commercial project. No accounts, no backend, no tracking.
 
 ---
 

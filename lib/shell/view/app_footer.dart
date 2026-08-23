@@ -88,8 +88,9 @@ class _Identity extends StatelessWidget {
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
           child: Text(
-            'An open source, ad-free catalogue for films and series. '
-            'No accounts, no tracking, no ads.',
+            'An open source catalogue for films and series, built as an '
+            'educational project. Non-commercial, with no accounts and '
+            'no tracking.',
             style: AppTypography.bodyStyle(size: 13.5),
           ),
         ),

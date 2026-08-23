@@ -26,7 +26,7 @@ class Video extends Equatable {
   bool get isYouTube => site.toLowerCase() == 'youtube' && key.isNotEmpty;
 
   /// `youtube-nocookie.com` keeps the trailer from setting tracking cookies —
-  /// Freeplix has no ads and no analytics, and the player should match.
+  /// Freeplix is non-commercial and runs no analytics; the player matches.
   String get embedUrl =>
       'https://www.youtube-nocookie.com/embed/$key?autoplay=0&rel=0&modestbranding=1&playsinline=1';
 

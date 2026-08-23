@@ -2,14 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Freeplix (pick device)",
+      "name": "Freeplix",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
       "toolArgs": ["--dart-define-from-file", ".env"]
     },
     {
-      "name": "Freeplix (pick device, profile)",
+      "name": "Freeplix (profile)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
@@ -17,104 +17,11 @@
       "toolArgs": ["--dart-define-from-file", ".env"]
     },
     {
-      "name": "Freeplix (pick device, release)",
+      "name": "Freeplix (release)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
       "flutterMode": "release",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (Android)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "android",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (Android, profile)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "android",
-      "flutterMode": "profile",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (Android, release)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "android",
-      "flutterMode": "release",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (iOS)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "ios",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (iOS, profile)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "ios",
-      "flutterMode": "profile",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (iOS, release)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "ios",
-      "flutterMode": "release",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (iOS Simulator)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "apple_ios_simulator",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (web)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "chrome",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (web, profile)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "chrome",
-      "flutterMode": "profile",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (macOS)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "macos",
-      "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Freeplix (Windows)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "deviceId": "windows",
       "toolArgs": ["--dart-define-from-file", ".env"]
     },
     {
@@ -123,18 +30,6 @@
       "type": "dart",
       "program": "${file}",
       "toolArgs": ["--dart-define-from-file", ".env"]
-    },
-    {
-      "name": "Attach to Flutter",
-      "request": "attach",
-      "type": "dart"
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Freeplix (mobile: Android + iOS)",
-      "configurations": ["Freeplix (Android)", "Freeplix (iOS)"],
-      "stopAll": true
     }
   ]
 }

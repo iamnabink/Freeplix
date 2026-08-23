@@ -1,17 +1,19 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:freeplix/core/theme/app_colors.dart';
 import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/media_grid.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/state_views.dart';
-import 'package:freeplix/data/models/genre.dart';
+import 'package:freeplix/data/models/media_filter.dart';
 import 'package:freeplix/data/models/media_type.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/browse/bloc/browse_cubit.dart';
+import 'package:freeplix/features/browse/widgets/filter_chip_tile.dart';
+import 'package:freeplix/features/browse/widgets/filter_sheet.dart';
 import 'package:freeplix/shell/view/app_footer.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
@@ -25,15 +27,15 @@ class BrowsePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      // Keyed on the filter so arriving from a link rebuilds cleanly.
       key: ValueKey('browse-${type.wire}-$genreId'),
       create: (context) {
         final cubit = BrowseCubit(
           repository: context.read<TmdbRepository>(),
           type: type,
-          genreId: genreId,
+          initialFilter: MediaFilter(
+            genreIds: {?genreId},
+          ),
         );
-        // The cubit reports progress through its state; nothing awaits this.
         unawaited(cubit.start());
         return cubit;
       },
@@ -42,31 +44,17 @@ class BrowsePage extends StatelessWidget {
   }
 }
 
-class BrowseView extends HookWidget {
+class BrowseView extends StatelessWidget {
   const BrowseView({required this.type, super.key});
 
   final MediaType type;
 
   @override
   Widget build(BuildContext context) {
-    final controller = useScrollController();
-    final cubit = context.read<BrowseCubit>();
-
-    useEffect(() {
-      void onScroll() {
-        if (!controller.hasClients) return;
-        final position = controller.position;
-        if (position.pixels > position.maxScrollExtent - 900) {
-          unawaited(cubit.loadMore());
-        }
-      }
-
-      controller.addListener(onScroll);
-      return () => controller.removeListener(onScroll);
-    }, [controller]);
-
     return BlocBuilder<BrowseCubit, BrowseState>(
       builder: (context, state) {
+        final cubit = context.read<BrowseCubit>();
+
         if (state.status == BrowseStatus.failure && state.items.isEmpty) {
           return ErrorView(
             message: state.error ?? 'Freeplix could not reach TMDB.',
@@ -74,46 +62,41 @@ class BrowseView extends HookWidget {
           );
         }
 
-        final isLoading =
-            state.status == BrowseStatus.loading ||
-            state.status == BrowseStatus.initial;
+        final gutter = PagePadding.gutterFor(MediaQuery.sizeOf(context).width);
 
         return CustomScrollView(
-          controller: controller,
           slivers: [
             SliverToBoxAdapter(
-              child: PagePadding(
-                child: _BrowseHeader(type: type, state: state),
-              ),
+              child: PagePadding(child: _Header(type: type, state: state)),
             ),
             SliverPadding(
-              padding: EdgeInsets.symmetric(
-                horizontal: PagePadding.gutterFor(
-                  MediaQuery.sizeOf(context).width,
-                ),
-              ),
-              sliver: isLoading
+              padding: EdgeInsets.symmetric(horizontal: gutter),
+              sliver: state.isBusy
                   ? const MediaGridSkeletonSliver()
                   : MediaGridSliver(
                       items: state.items,
-                      onSelect: (item) => context.go(
-                        '/title/${item.type.wire}/${item.id}',
-                      ),
+                      onSelect: (item) =>
+                          context.go('/title/${item.type.wire}/${item.id}'),
                     ),
             ),
-            if (!isLoading && state.items.isEmpty)
-              const SliverToBoxAdapter(
+            if (!state.isBusy && state.items.isEmpty)
+              SliverToBoxAdapter(
                 child: EmptyView(
-                  eyebrow: 'Nothing here',
-                  message: 'No titles match that filter. Try another genre.',
+                  eyebrow: 'No matches',
+                  message:
+                      'Nothing in TMDB matches every filter at once. Try '
+                      'removing one — genre plus language plus decade '
+                      'narrows things quickly.',
+                  action: OutlinedButton(
+                    onPressed: cubit.clearFilter,
+                    child: const Text('Clear filters'),
+                  ),
                 ),
               ),
             SliverToBoxAdapter(
-              child: SizedBox(
-                height: Insets.xxxl,
-                child: state.status == BrowseStatus.loadingMore
-                    ? const LoadingView()
-                    : null,
+              child: PagePadding(
+                vertical: Insets.xl,
+                child: _LoadMore(state: state),
               ),
             ),
             const SliverAppFooter(),
@@ -124,16 +107,16 @@ class BrowseView extends HookWidget {
   }
 }
 
-class _BrowseHeader extends StatelessWidget {
-  const _BrowseHeader({required this.type, required this.state});
+class _Header extends StatelessWidget {
+  const _Header({required this.type, required this.state});
 
   final MediaType type;
   final BrowseState state;
 
   @override
   Widget build(BuildContext context) {
-    final isCompact = MediaQuery.sizeOf(context).width < Breakpoints.compact;
-    final cubit = context.read<BrowseCubit>();
+    final isCompact =
+        MediaQuery.sizeOf(context).width < Breakpoints.compact;
     final heading = type == MediaType.movie ? 'Films' : 'Series';
 
     return Column(
@@ -142,143 +125,200 @@ class _BrowseHeader extends StatelessWidget {
         SizedBox(height: isCompact ? Insets.lg : Insets.xxxl + Insets.md),
         const Eyebrow('Browse the catalogue'),
         const SizedBox(height: Insets.xs),
-        Text(
-          state.activeGenre == null
-              ? heading
-              : '${state.activeGenre!.name} $heading'.trim(),
-          style: AppTypography.displayStyle(size: isCompact ? 34 : 46),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Text(
+                state.filter.matchingIndustry == null
+                    ? heading
+                    : '${state.filter.matchingIndustry} $heading',
+                style: AppTypography.displayStyle(size: isCompact ? 34 : 46),
+              ),
+            ),
+            const SizedBox(width: Insets.md),
+            _FilterButton(state: state, type: type),
+          ],
         ),
-        const SizedBox(height: Insets.lg),
-        _SortRow(sort: state.sort, onSelect: cubit.selectSort),
         const SizedBox(height: Insets.md),
-        _GenreChips(
-          genres: state.genres,
-          activeId: state.genreId,
-          onSelect: cubit.selectGenre,
-        ),
+        _ActiveFilters(state: state),
+        _ResultCount(state: state),
         const SizedBox(height: Insets.xl),
       ],
     );
   }
 }
 
-class _SortRow extends StatelessWidget {
-  const _SortRow({required this.sort, required this.onSelect});
+class _FilterButton extends StatelessWidget {
+  const _FilterButton({required this.state, required this.type});
 
-  final BrowseSort sort;
-  final ValueChanged<BrowseSort> onSelect;
+  final BrowseState state;
+  final MediaType type;
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: Insets.xs,
-      runSpacing: Insets.xs,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(right: Insets.xxs),
-          child: Eyebrow('Sort'),
+    final count = state.filter.activeCount;
+    final cubit = context.read<BrowseCubit>();
+
+    return OutlinedButton.icon(
+      onPressed: () async {
+        final applied = await showFilterSheet(
+          context,
+          current: state.filter,
+          genres: state.genres,
+          type: type,
+        );
+        if (applied != null) await cubit.applyFilter(applied);
+      },
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(
+          color: count > 0 ? AppColors.lamp : AppColors.ash,
         ),
-        for (final option in BrowseSort.values)
-          _Pill(
-            label: option.label,
-            active: option == sort,
-            onTap: () => onSelect(option),
+      ),
+      icon: Icon(
+        Icons.tune_rounded,
+        size: 18,
+        color: count > 0 ? AppColors.lamp : AppColors.screen,
+      ),
+      label: Text(count > 0 ? 'Filters · $count' : 'Filters'),
+    );
+  }
+}
+
+/// What is currently narrowing the results, each removable in one tap.
+class _ActiveFilters extends StatelessWidget {
+  const _ActiveFilters({required this.state});
+
+  final BrowseState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final filter = state.filter;
+    if (filter.isEmpty) return const SizedBox.shrink();
+
+    final cubit = context.read<BrowseCubit>();
+    final industry = filter.matchingIndustry;
+
+    String? languageLabel;
+    if (filter.language != null && industry == null) {
+      languageLabel = FilterOptions.languages
+          .where((l) => l.code == filter.language)
+          .map((l) => l.label)
+          .firstOrNull;
+    }
+    String? countryLabel;
+    if (filter.country != null && industry == null) {
+      countryLabel = FilterOptions.countries
+          .where((c) => c.code == filter.country)
+          .map((c) => c.label)
+          .firstOrNull;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Insets.sm),
+      child: Wrap(
+        spacing: Insets.xs,
+        runSpacing: Insets.xs,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          if (industry != null)
+            ActiveFilterChip(
+              label: industry,
+              onRemove: () => cubit.applyFilter(
+                filter.copyWith(language: () => null, country: () => null),
+              ),
+            ),
+          for (final genre in state.activeGenres)
+            ActiveFilterChip(
+              label: genre.name,
+              onRemove: () => cubit.removeGenre(genre.id),
+            ),
+          if (languageLabel != null)
+            ActiveFilterChip(
+              label: languageLabel,
+              onRemove: () =>
+                  cubit.applyFilter(filter.copyWith(language: () => null)),
+            ),
+          if (countryLabel != null)
+            ActiveFilterChip(
+              label: countryLabel,
+              onRemove: () =>
+                  cubit.applyFilter(filter.copyWith(country: () => null)),
+            ),
+          if (filter.minRating != null)
+            ActiveFilterChip(
+              label: '${filter.minRating!.toStringAsFixed(0)}+ rating',
+              onRemove: () =>
+                  cubit.applyFilter(filter.copyWith(minRating: () => null)),
+            ),
+          if (filter.yearFrom != null)
+            ActiveFilterChip(
+              label: '${filter.yearFrom}s',
+              onRemove: () => cubit.applyFilter(
+                filter.copyWith(yearFrom: () => null, yearTo: () => null),
+              ),
+            ),
+          TextButton(
+            onPressed: cubit.clearFilter,
+            child: const Text('Clear all'),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ResultCount extends StatelessWidget {
+  const _ResultCount({required this.state});
+
+  final BrowseState state;
+
+  @override
+  Widget build(BuildContext context) {
+    if (state.isBusy || state.items.isEmpty) return const SizedBox.shrink();
+
+    return MetaBar(
+      entries: [
+        state.filter.sort.label,
+        'Showing ${state.items.length} of ${state.totalResults}',
       ],
     );
   }
 }
 
-class _GenreChips extends StatelessWidget {
-  const _GenreChips({
-    required this.genres,
-    required this.activeId,
-    required this.onSelect,
-  });
+/// An explicit button rather than loading on scroll: the reader decides when
+/// to fetch more, and the footer stays reachable.
+class _LoadMore extends StatelessWidget {
+  const _LoadMore({required this.state});
 
-  final List<Genre> genres;
-  final int? activeId;
-  final ValueChanged<int?> onSelect;
+  final BrowseState state;
 
   @override
   Widget build(BuildContext context) {
-    if (genres.isEmpty) return const SizedBox.shrink();
+    if (state.isBusy || state.items.isEmpty) return const SizedBox.shrink();
 
-    return Wrap(
-      spacing: Insets.xs,
-      runSpacing: Insets.xs,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(right: Insets.xxs),
-          child: Eyebrow('Genre'),
+    if (!state.hasMore) {
+      return Center(
+        child: Text(
+          "That's every match.",
+          style: AppTypography.monoStyle(),
         ),
-        _Pill(
-          label: 'All',
-          active: activeId == null,
-          onTap: () => onSelect(null),
-        ),
-        for (final genre in genres)
-          _Pill(
-            label: genre.name,
-            active: genre.id == activeId,
-            onTap: () => onSelect(genre.id),
-          ),
-      ],
-    );
-  }
-}
+      );
+    }
 
-class _Pill extends HookWidget {
-  const _Pill({
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
+    final isLoading = state.status == BrowseStatus.loadingMore;
 
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final hovered = useState(false);
-
-    return Semantics(
-      button: true,
-      selected: active,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => hovered.value = true,
-        onExit: (_) => hovered.value = false,
-        child: GestureDetector(
-          onTap: onTap,
-          child: AnimatedContainer(
-            duration: Motion.fast,
-            padding: const EdgeInsets.symmetric(
-              horizontal: Insets.sm,
-              vertical: 7,
-            ),
-            decoration: BoxDecoration(
-              color: active ? AppColors.lamp : AppColors.soot,
-              borderRadius: BorderRadius.circular(Radii.sm),
-              border: Border.all(
-                color: active
-                    ? AppColors.lamp
-                    : (hovered.value ? AppColors.screenDim : AppColors.ash),
-              ),
-            ),
-            child: Text(
-              label,
-              style: AppTypography.bodyStyle(
-                size: 13,
-                weight: active ? 600 : 500,
-                color: active ? AppColors.ink : AppColors.screen,
-              ),
-            ),
-          ),
-        ),
+    return Center(
+      child: OutlinedButton.icon(
+        onPressed: isLoading ? null : context.read<BrowseCubit>().loadMore,
+        icon: isLoading
+            ? const SizedBox(
+                width: 15,
+                height: 15,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.expand_more_rounded, size: 20),
+        label: Text(isLoading ? 'Loading' : 'Load more'),
       ),
     );
   }
