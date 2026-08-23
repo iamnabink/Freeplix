@@ -6,12 +6,15 @@ import 'package:freeplix/features/watchlist/bloc/continue_watching_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  MediaDetail detail(int id, String title, {MediaType type = MediaType.movie}) =>
-      MediaDetail.fromJson({
-        'id': id,
-        if (type == MediaType.movie) 'title': title else 'name': title,
-        'poster_path': '/p.jpg',
-      }, type: type);
+  MediaDetail detail(
+    int id,
+    String title, {
+    MediaType type = MediaType.movie,
+  }) => MediaDetail.fromJson({
+    'id': id,
+    if (type == MediaType.movie) 'title': title else 'name': title,
+    'poster_path': '/p.jpg',
+  }, type: type);
 
   late WatchProgressRepository repository;
 

@@ -117,8 +117,10 @@ class HeroBillboard extends HookWidget {
       );
     }
 
-    final height =
-        (MediaQuery.sizeOf(context).height * 0.66).clamp(430.0, 600.0);
+    final height = (MediaQuery.sizeOf(context).height * 0.66).clamp(
+      430.0,
+      600.0,
+    );
 
     return SizedBox(
       height: height,
