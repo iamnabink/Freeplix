@@ -42,10 +42,13 @@ One codebase, rendered by the same widgets on every target.
 
 **Phone**
 
-The layout is responsive rather than a separate build: below 640px the top
-rail becomes a bottom bar, carousels drop their pointer-only scroll arrows,
-and the hero and detail banners let their content set the height instead of
-being pinned to a fixed one.
+Same codebase. Same widgets. One responsive layout that carries from a
+desktop browser down to a phone — no parallel mobile build, no second design
+to keep in sync.
+
+> **Playback is web only for now.** On a phone the watch screen hands off to
+> the system browser. Bringing it inline is open for a PR — see
+> [Future work](#platform).
 
 <p align="left">
   <img src="ss/phone1.png" width="270" alt="Freeplix on a phone" />
