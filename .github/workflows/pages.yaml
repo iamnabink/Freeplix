@@ -54,7 +54,7 @@ jobs:
           # Stop Jekyll from swallowing files that start with an underscore.
           touch build/web/.nojekyll
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
