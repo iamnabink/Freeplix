@@ -77,16 +77,31 @@ class BrowseCubit extends Cubit<BrowseState> {
     required this._repository,
     required this.type,
     MediaFilter initialFilter = const MediaFilter(),
+    this.initialCastId,
   }) : super(BrowseState(filter: initialFilter));
 
   final TmdbRepository _repository;
   final MediaType type;
+
+  /// Arrived from a cast member being tapped: /movies?cast=6384
+  final int? initialCastId;
 
   Future<void> start() async {
     emit(state.copyWith(status: BrowseStatus.loading));
     try {
       final genres = await _repository.genres(type);
       emit(state.copyWith(genres: genres));
+
+      // Resolve the name so the chip reads "Keanu Reeves", not an id.
+      final castId = initialCastId;
+      if (castId != null) {
+        try {
+          final who = await _repository.person(castId);
+          emit(state.copyWith(filter: state.filter.copyWith(cast: {who})));
+        } on ApiException {
+          // A bad id in the URL should not take the whole page down.
+        }
+      }
       await _fetch(reset: true);
     } on ApiException catch (error) {
       emit(state.copyWith(status: BrowseStatus.failure, error: error.message));

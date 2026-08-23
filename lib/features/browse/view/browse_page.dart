@@ -21,22 +21,29 @@ import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
 class BrowsePage extends StatelessWidget {
-  const BrowsePage({required this.type, this.genreId, super.key});
+  const BrowsePage({
+    required this.type,
+    this.genreId,
+    this.castId,
+    super.key,
+  });
 
   final MediaType type;
   final int? genreId;
 
+  /// Set when a cast member was tapped on a details page.
+  final int? castId;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      key: ValueKey('browse-${type.wire}-$genreId'),
+      key: ValueKey('browse-${type.wire}-$genreId-$castId'),
       create: (context) {
         final cubit = BrowseCubit(
           repository: context.read<TmdbRepository>(),
           type: type,
-          initialFilter: MediaFilter(
-            genreIds: {?genreId},
-          ),
+          initialFilter: MediaFilter(genreIds: {?genreId}),
+          initialCastId: castId,
         );
         unawaited(cubit.start());
         return cubit;

@@ -39,6 +39,7 @@ class TmdbRepository {
   final _detailCache = <String, MediaDetail>{};
   final _genreCache = <MediaType, List<Genre>>{};
   final _providerCache = <String, List<WatchProviderRef>>{};
+  final _personCache = <int, PersonRef>{};
 
   Future<MediaPage> trending({String window = 'week', int page = 1}) =>
       _page('/trending/all/$window', page: page);
@@ -89,6 +90,13 @@ class TmdbRepository {
             .toList() ??
         const <PersonRef>[];
     return people..sort((a, b) => b.popularity.compareTo(a.popularity));
+  }
+
+  Future<PersonRef> person(int id) async {
+    final cached = _personCache[id];
+    if (cached != null) return cached;
+    final json = await _client.get('/person/$id');
+    return _personCache[id] = PersonRef.fromJson(json);
   }
 
   Future<List<KeywordRef>> searchKeywords(String query) async {
