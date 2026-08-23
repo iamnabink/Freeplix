@@ -74,7 +74,7 @@ jobs:
           path: build/web
 
       - name: Publish the release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.value }}
           name: Freeplix ${{ steps.version.outputs.value }}
