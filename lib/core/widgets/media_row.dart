@@ -121,25 +121,26 @@ class _RowHeader extends StatelessWidget {
           TextButton(onPressed: onSeeAll, child: const Text('See all')),
         ],
         const Spacer(),
-        AnimatedOpacity(
-          duration: Motion.fast,
-          opacity: showControls ? 1 : 0,
-          child: Row(
-            children: [
-              _NudgeButton(
-                icon: Icons.chevron_left_rounded,
-                tooltip: 'Scroll left',
-                onPressed: showControls ? () => onNudge(-1) : null,
-              ),
-              const SizedBox(width: Insets.xxs),
-              _NudgeButton(
-                icon: Icons.chevron_right_rounded,
-                tooltip: 'Scroll right',
-                onPressed: showControls ? () => onNudge(1) : null,
-              ),
-            ],
+        if (MediaQuery.sizeOf(context).width >= Breakpoints.compact)
+          AnimatedOpacity(
+            duration: Motion.fast,
+            opacity: showControls ? 1 : 0,
+            child: Row(
+              children: [
+                _NudgeButton(
+                  icon: Icons.chevron_left_rounded,
+                  tooltip: 'Scroll left',
+                  onPressed: showControls ? () => onNudge(-1) : null,
+                ),
+                const SizedBox(width: Insets.xxs),
+                _NudgeButton(
+                  icon: Icons.chevron_right_rounded,
+                  tooltip: 'Scroll right',
+                  onPressed: showControls ? () => onNudge(1) : null,
+                ),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

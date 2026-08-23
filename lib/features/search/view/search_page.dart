@@ -10,6 +10,7 @@ import 'package:freeplix/core/widgets/state_views.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/search/bloc/search_cubit.dart';
 import 'package:freeplix/shell/view/app_footer.dart';
+import 'package:freeplix/shell/view/app_shell.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
@@ -54,7 +55,7 @@ class SearchView extends HookWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  height: isCompact ? Insets.xxxl : Insets.xxxl + Insets.md,
+                  height: ShellChrome.of(context) + Insets.lg,
                 ),
                 const Eyebrow('Search the catalogue'),
                 const SizedBox(height: Insets.xs),

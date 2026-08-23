@@ -15,6 +15,7 @@ import 'package:freeplix/features/browse/bloc/browse_cubit.dart';
 import 'package:freeplix/features/browse/widgets/filter_chip_tile.dart';
 import 'package:freeplix/features/browse/widgets/filter_sheet.dart';
 import 'package:freeplix/shell/view/app_footer.dart';
+import 'package:freeplix/shell/view/app_shell.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
@@ -122,7 +123,7 @@ class _Header extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: isCompact ? Insets.xxxl : Insets.xxxl + Insets.md),
+        SizedBox(height: ShellChrome.of(context) + Insets.lg),
         const Eyebrow('Browse the catalogue'),
         const SizedBox(height: Insets.xs),
         Row(

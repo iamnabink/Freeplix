@@ -9,6 +9,7 @@ import 'package:freeplix/core/widgets/net_image.dart';
 import 'package:freeplix/core/widgets/sprocket_rail.dart';
 import 'package:freeplix/data/models/watch_progress.dart';
 import 'package:freeplix/features/watchlist/bloc/continue_watching_cubit.dart';
+import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
 /// Titles the reader opened in the player, offered back. Landscape cards,
@@ -29,39 +30,43 @@ class ContinueWatchingRow extends HookWidget {
         return MouseRegion(
           onEnter: (_) => hovered.value = true,
           onExit: (_) => hovered.value = false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Jump back in',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: context.read<ContinueWatchingCubit>().clear,
-                    child: const Text('Clear'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: Insets.sm),
-              SprocketRail(lit: hovered.value),
-              const SizedBox(height: Insets.sm),
-              SizedBox(
-                height: _cardWidth * 9 / 16 + 52,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: Insets.xxs),
-                  itemCount: state.entries.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: Insets.sm),
-                  itemBuilder: (context, index) =>
-                      _ResumeCard(entry: state.entries[index]),
+          child: PagePadding(
+            vertical: Insets.xl,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Jump back in',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: context.read<ContinueWatchingCubit>().clear,
+                      child: const Text('Clear'),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: Insets.sm),
-              SprocketRail(lit: hovered.value),
-            ],
+                const SizedBox(height: Insets.sm),
+                SprocketRail(lit: hovered.value),
+                const SizedBox(height: Insets.sm),
+                SizedBox(
+                  height: _cardWidth * 9 / 16 + 52,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: Insets.xxs),
+                    itemCount: state.entries.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(width: Insets.sm),
+                    itemBuilder: (context, index) =>
+                        _ResumeCard(entry: state.entries[index]),
+                  ),
+                ),
+                const SizedBox(height: Insets.sm),
+                SprocketRail(lit: hovered.value),
+              ],
+            ),
           ),
         );
       },
@@ -189,8 +194,7 @@ class _RemoveButton extends StatelessWidget {
     return Tooltip(
       message: 'Remove from this row',
       child: IconButton(
-        onPressed: () =>
-            context.read<ContinueWatchingCubit>().remove(entry),
+        onPressed: () => context.read<ContinueWatchingCubit>().remove(entry),
         iconSize: 15,
         visualDensity: VisualDensity.compact,
         style: IconButton.styleFrom(

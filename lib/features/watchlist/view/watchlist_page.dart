@@ -7,6 +7,7 @@ import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/state_views.dart';
 import 'package:freeplix/features/watchlist/bloc/watchlist_cubit.dart';
 import 'package:freeplix/shell/view/app_footer.dart';
+import 'package:freeplix/shell/view/app_shell.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
@@ -27,7 +28,7 @@ class WatchlistPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      height: isCompact ? Insets.xxxl : Insets.xxxl + Insets.md,
+                      height: ShellChrome.of(context) + Insets.lg,
                     ),
                     const Eyebrow('Saved on this device'),
                     const SizedBox(height: Insets.xs),

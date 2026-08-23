@@ -20,8 +20,13 @@ Future<MediaFilter?> showFilterSheet(
   return showModalBottomSheet<MediaFilter>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     backgroundColor: Colors.transparent,
     barrierColor: AppColors.ink.withValues(alpha: 0.72),
+    // Sits in the lower part of the screen rather than climbing over the
+    // whole page, and stays a readable column on wide displays instead of
+    // stretching the full width.
+    constraints: const BoxConstraints(maxWidth: 720),
     builder: (_) =>
         FilterSheet(current: current, genres: genres, type: type),
   );
@@ -47,7 +52,7 @@ class FilterSheet extends HookWidget {
     final viewport = MediaQuery.sizeOf(context);
 
     return Container(
-      constraints: BoxConstraints(maxHeight: viewport.height * 0.9),
+      constraints: BoxConstraints(maxHeight: viewport.height * 0.7),
       decoration: const BoxDecoration(
         color: AppColors.ink,
         border: Border(top: BorderSide(color: AppColors.ash)),

@@ -7,6 +7,28 @@ import 'package:freeplix/core/widgets/wordmark.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
+/// The height the shell's header occupies, published so pages can clear it
+/// instead of hard-coding a number that drifts out of date.
+class ShellChrome extends InheritedWidget {
+  const ShellChrome({
+    required this.headerHeight,
+    required super.child,
+    super.key,
+  });
+
+  final double headerHeight;
+
+  static double of(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<ShellChrome>()
+          ?.headerHeight ??
+      0;
+
+  @override
+  bool updateShouldNotify(ShellChrome oldWidget) =>
+      oldWidget.headerHeight != headerHeight;
+}
+
 class NavDestination {
   const NavDestination(this.label, this.path, this.icon);
 
@@ -37,6 +59,10 @@ class AppShell extends HookWidget {
     final isCompact = width < Breakpoints.compact;
     final location = GoRouterState.of(context).uri.path;
 
+    // Status bar inset plus the bar's own content height.
+    final headerHeight =
+        MediaQuery.paddingOf(context).top + (isCompact ? 52.0 : 58.0);
+
     return Scaffold(
       backgroundColor: AppColors.ink,
       body: NotificationListener<ScrollUpdateNotification>(
@@ -52,7 +78,7 @@ class AppShell extends HookWidget {
               child: MediaQuery.removePadding(
                 context: context,
                 removeTop: true,
-                child: child,
+                child: ShellChrome(headerHeight: headerHeight, child: child),
               ),
             ),
             Positioned(

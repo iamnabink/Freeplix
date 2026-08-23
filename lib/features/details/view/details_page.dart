@@ -16,6 +16,7 @@ import 'package:freeplix/features/details/widgets/cast_rail.dart';
 import 'package:freeplix/features/details/widgets/episode_list.dart';
 import 'package:freeplix/features/watchlist/bloc/watchlist_cubit.dart';
 import 'package:freeplix/shell/view/app_footer.dart';
+import 'package:freeplix/shell/view/app_shell.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
@@ -112,10 +113,45 @@ class _Banner extends StatelessWidget {
     final isCompact = width < Breakpoints.compact;
     final isMedium = width < Breakpoints.medium;
 
+    // On a phone the copy is taller than any backdrop worth showing, so the
+    // artwork gets a fixed band at the top and the text flows beneath it.
+    // Pinning both inside one fixed-height Stack overflowed and stacked the
+    // buttons on top of the cast row.
+    if (isCompact) {
+      return Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 320,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                NetImage(url: detail.backdrop()),
+                const DecoratedBox(
+                  decoration: BoxDecoration(gradient: AppColors.backdropFade),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Clears the shell header, then lets the artwork read before
+              // the copy begins over its lower half.
+              SizedBox(height: ShellChrome.of(context) + 150),
+              PagePadding(child: _Headline(detail: detail)),
+            ],
+          ),
+        ],
+      );
+    }
+
     return Stack(
       children: [
         SizedBox(
-          height: isCompact ? 340 : 520,
+          height: 520,
           width: double.infinity,
           child: Stack(
             fit: StackFit.expand,
