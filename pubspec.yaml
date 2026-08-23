@@ -28,7 +28,7 @@ dependencies:
   web: ^1.1.1
 
 dev_dependencies:
-  bloc_lint: ^0.4.1
+  bloc_lint: ^0.4.2
   bloc_test: ^10.0.0
   bloc_tools: ^0.1.0-dev.24
   flutter_test:
