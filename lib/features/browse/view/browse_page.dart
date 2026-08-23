@@ -68,7 +68,9 @@ class BrowseView extends StatelessWidget {
         return CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: PagePadding(child: _Header(type: type, state: state)),
+              child: PagePadding(
+                child: _Header(type: type, state: state),
+              ),
             ),
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: gutter),
@@ -116,8 +118,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompact =
-        MediaQuery.sizeOf(context).width < Breakpoints.compact;
+    final isCompact = MediaQuery.sizeOf(context).width < Breakpoints.compact;
     final heading = type == MediaType.movie ? 'Films' : 'Series';
 
     return Column(
@@ -168,6 +169,7 @@ class _FilterButton extends StatelessWidget {
           current: state.filter,
           genres: state.genres,
           type: type,
+          repository: context.read<TmdbRepository>(),
         );
         if (applied != null) await cubit.applyFilter(applied);
       },

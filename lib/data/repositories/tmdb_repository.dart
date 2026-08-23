@@ -4,6 +4,7 @@ import 'package:freeplix/data/models/media_detail.dart';
 import 'package:freeplix/data/models/media_filter.dart';
 import 'package:freeplix/data/models/media_item.dart';
 import 'package:freeplix/data/models/media_type.dart';
+import 'package:freeplix/data/models/person_ref.dart';
 import 'package:freeplix/data/models/season.dart';
 
 /// One page of results plus enough context to ask for the next one.
@@ -70,6 +71,23 @@ class TmdbRepository {
     fallbackType: type,
     query: filter.toQuery(type),
   );
+
+  /// People, for the cast filter. Ordered by how well known they are, since
+  /// a name like "Chris" otherwise returns dozens of unfamiliar matches.
+  Future<List<PersonRef>> searchPeople(String query) async {
+    if (query.trim().isEmpty) return const [];
+    final json = await _client.get(
+      '/search/person',
+      query: {'query': query.trim(), 'include_adult': false},
+    );
+    final people =
+        (json['results'] as List<dynamic>?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(PersonRef.fromJson)
+            .toList() ??
+        const <PersonRef>[];
+    return people..sort((a, b) => b.popularity.compareTo(a.popularity));
+  }
 
   Future<List<Genre>> genres(MediaType type) async {
     final cached = _genreCache[type];

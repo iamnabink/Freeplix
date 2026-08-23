@@ -24,8 +24,7 @@ class WatchProgress extends Equatable {
     id: json['id'] as int,
     type: MediaType.fromWire(json['type'] as String?),
     title: json['title'] as String? ?? '',
-    openedAt:
-        DateTime.tryParse(json['at'] as String? ?? '') ?? DateTime(2000),
+    openedAt: DateTime.tryParse(json['at'] as String? ?? '') ?? DateTime(2000),
     posterPath: json['poster'] as String?,
     backdropPath: json['backdrop'] as String?,
     season: json['s'] as int?,

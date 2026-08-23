@@ -16,19 +16,20 @@ class WatchProgressRepository {
 
   List<WatchProgress> load() {
     final raw = _prefs.getStringList(_key) ?? const [];
-    final entries = raw
-        .map((entry) {
-          try {
-            return WatchProgress.fromJson(
-              jsonDecode(entry) as Map<String, dynamic>,
-            );
-          } on FormatException {
-            return null;
-          }
-        })
-        .whereType<WatchProgress>()
-        .toList()
-      ..sort((a, b) => b.openedAt.compareTo(a.openedAt));
+    final entries =
+        raw
+            .map((entry) {
+              try {
+                return WatchProgress.fromJson(
+                  jsonDecode(entry) as Map<String, dynamic>,
+                );
+              } on FormatException {
+                return null;
+              }
+            })
+            .whereType<WatchProgress>()
+            .toList()
+          ..sort((a, b) => b.openedAt.compareTo(a.openedAt));
     return entries;
   }
 

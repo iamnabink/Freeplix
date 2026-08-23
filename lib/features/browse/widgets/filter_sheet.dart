@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:freeplix/core/network/api_exception.dart';
 import 'package:freeplix/core/theme/app_colors.dart';
 import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
+import 'package:freeplix/core/widgets/net_image.dart';
 import 'package:freeplix/data/models/genre.dart';
 import 'package:freeplix/data/models/media_filter.dart';
 import 'package:freeplix/data/models/media_type.dart';
+import 'package:freeplix/data/models/person_ref.dart';
+import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/browse/widgets/filter_chip_tile.dart';
 
 /// Opens the filter sheet and returns the filter to apply, or null if the
@@ -16,6 +22,7 @@ Future<MediaFilter?> showFilterSheet(
   required MediaFilter current,
   required List<Genre> genres,
   required MediaType type,
+  required TmdbRepository repository,
 }) {
   return showModalBottomSheet<MediaFilter>(
     context: context,
@@ -27,8 +34,12 @@ Future<MediaFilter?> showFilterSheet(
     // whole page, and stays a readable column on wide displays instead of
     // stretching the full width.
     constraints: const BoxConstraints(maxWidth: 720),
-    builder: (_) =>
-        FilterSheet(current: current, genres: genres, type: type),
+    builder: (_) => FilterSheet(
+      current: current,
+      genres: genres,
+      type: type,
+      repository: repository,
+    ),
   );
 }
 
@@ -37,12 +48,14 @@ class FilterSheet extends HookWidget {
     required this.current,
     required this.genres,
     required this.type,
+    required this.repository,
     super.key,
   });
 
   final MediaFilter current;
   final List<Genre> genres;
   final MediaType type;
+  final TmdbRepository repository;
 
   @override
   Widget build(BuildContext context) {
@@ -91,10 +104,9 @@ class FilterSheet extends HookWidget {
                             FilterChipTile(
                               label: option.label,
                               selected: draft.value.sort == option,
-                              onTap: () =>
-                                  draft.value = draft.value.copyWith(
-                                    sort: option,
-                                  ),
+                              onTap: () => draft.value = draft.value.copyWith(
+                                sort: option,
+                              ),
                             ),
                       ],
                     ),
@@ -122,6 +134,8 @@ class FilterSheet extends HookWidget {
                         ],
                       ),
                     ),
+                  if (type == MediaType.movie)
+                    _CastPicker(draft: draft, repository: repository),
                   _Section(
                     title: 'Original language',
                     hint: 'The language a title was made in',
@@ -215,7 +229,12 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(Insets.lg, Insets.xs, Insets.sm, Insets.sm),
+      padding: const EdgeInsets.fromLTRB(
+        Insets.lg,
+        Insets.xs,
+        Insets.sm,
+        Insets.sm,
+      ),
       child: Row(
         children: [
           Text('Filters', style: Theme.of(context).textTheme.headlineSmall),
@@ -407,6 +426,177 @@ class _Footer extends StatelessWidget {
               onPressed: onApply,
               child: Text(changed ? 'Show results' : 'Done'),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Search TMDB for a person and narrow the catalogue to their films.
+///
+/// TMDB has no character filter — it indexes who appeared, not who they
+/// played — so this filters by performer.
+class _CastPicker extends HookWidget {
+  const _CastPicker({required this.draft, required this.repository});
+
+  final ValueNotifier<MediaFilter> draft;
+  final TmdbRepository repository;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = useTextEditingController();
+    final query = useState('');
+    final results = useState<List<PersonRef>>(const []);
+    final loading = useState(false);
+
+    useEffect(() {
+      final term = query.value.trim();
+      if (term.length < 2) {
+        results.value = const [];
+        return null;
+      }
+
+      var cancelled = false;
+      loading.value = true;
+      final timer = Timer(const Duration(milliseconds: 350), () async {
+        try {
+          final people = await repository.searchPeople(term);
+          if (!cancelled) results.value = people.take(10).toList();
+        } on ApiException {
+          if (!cancelled) results.value = const [];
+        } finally {
+          if (!cancelled) loading.value = false;
+        }
+      });
+
+      return () {
+        cancelled = true;
+        timer.cancel();
+      };
+    }, [query.value]);
+
+    final chosen = draft.value.cast;
+
+    return _Section(
+      title: 'Cast',
+      hint:
+          'Films featuring a performer. Pick more than one for films they '
+          'share.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (chosen.isNotEmpty) ...[
+            Wrap(
+              spacing: Insets.xs,
+              runSpacing: Insets.xs,
+              children: [
+                for (final person in chosen)
+                  ActiveFilterChip(
+                    label: person.name,
+                    onRemove: () => draft.value = draft.value.copyWith(
+                      cast: {...chosen}..remove(person),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: Insets.sm),
+          ],
+          TextField(
+            controller: controller,
+            onChanged: (value) => query.value = value,
+            style: AppTypography.bodyStyle(
+              size: 14,
+              color: AppColors.emulsion,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Search for an actor',
+              isDense: true,
+              prefixIcon: const Icon(
+                Icons.person_search_rounded,
+                size: 18,
+                color: AppColors.screenDim,
+              ),
+              suffixIcon: loading.value
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : null,
+            ),
+          ),
+          if (results.value.isNotEmpty) ...[
+            const SizedBox(height: Insets.sm),
+            Wrap(
+              spacing: Insets.xs,
+              runSpacing: Insets.xs,
+              children: [
+                for (final person in results.value)
+                  if (!chosen.contains(person))
+                    _PersonChip(
+                      person: person,
+                      onTap: () {
+                        draft.value = draft.value.copyWith(
+                          cast: {...chosen, person},
+                        );
+                        controller.clear();
+                        query.value = '';
+                      },
+                    ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PersonChip extends StatelessWidget {
+  const _PersonChip({required this.person, required this.onTap});
+
+  final PersonRef person;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.only(right: Insets.sm),
+          decoration: BoxDecoration(
+            color: AppColors.soot,
+            borderRadius: BorderRadius.circular(Radii.pill),
+            border: Border.all(color: AppColors.ash),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipOval(
+                child: SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: NetImage(
+                    url: person.profile,
+                    fallbackIcon: Icons.person_outline_rounded,
+                  ),
+                ),
+              ),
+              const SizedBox(width: Insets.xs),
+              Text(
+                person.name,
+                style: AppTypography.bodyStyle(
+                  size: 12.5,
+                  weight: 600,
+                ),
+              ),
+            ],
           ),
         ),
       ),

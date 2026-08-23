@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:freeplix/data/models/media_type.dart';
+import 'package:freeplix/data/models/person_ref.dart';
 
 /// How results are ordered. TMDB names the date field differently for series.
 enum SortOption {
@@ -119,6 +120,7 @@ abstract final class FilterOptions {
 class MediaFilter extends Equatable {
   const MediaFilter({
     this.genreIds = const {},
+    this.cast = const {},
     this.language,
     this.country,
     this.minRating,
@@ -128,6 +130,11 @@ class MediaFilter extends Equatable {
   });
 
   final Set<int> genreIds;
+
+  /// TMDB honours `with_cast` on /discover/movie only — it silently ignores
+  /// the parameter for series, so the cast filter is offered for films.
+  final Set<PersonRef> cast;
+
   final String? language;
   final String? country;
   final double? minRating;
@@ -138,6 +145,7 @@ class MediaFilter extends Equatable {
   /// How many filters are narrowing the results, for the badge on the button.
   int get activeCount =>
       genreIds.length +
+      cast.length +
       (language == null ? 0 : 1) +
       (country == null ? 0 : 1) +
       (minRating == null ? 0 : 1) +
@@ -168,6 +176,8 @@ class MediaFilter extends Equatable {
       // dominate any rating-based ordering.
       'vote_count.gte': sort == SortOption.rated ? 200 : 50,
       if (genreIds.isNotEmpty) 'with_genres': genreIds.join(','),
+      if (cast.isNotEmpty && type == MediaType.movie)
+        'with_cast': cast.map((p) => p.id).join(','),
       if (language != null) 'with_original_language': language,
       if (country != null) 'with_origin_country': country,
       if (minRating != null) 'vote_average.gte': minRating,
@@ -178,6 +188,7 @@ class MediaFilter extends Equatable {
 
   MediaFilter copyWith({
     Set<int>? genreIds,
+    Set<PersonRef>? cast,
     String? Function()? language,
     String? Function()? country,
     double? Function()? minRating,
@@ -187,6 +198,7 @@ class MediaFilter extends Equatable {
   }) {
     return MediaFilter(
       genreIds: genreIds ?? this.genreIds,
+      cast: cast ?? this.cast,
       language: language == null ? this.language : language(),
       country: country == null ? this.country : country(),
       minRating: minRating == null ? this.minRating : minRating(),
@@ -201,6 +213,7 @@ class MediaFilter extends Equatable {
   @override
   List<Object?> get props => [
     genreIds,
+    cast,
     language,
     country,
     minRating,
