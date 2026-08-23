@@ -1,7 +1,10 @@
 {
   "version": "0.2",
   "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
-  "dictionaries": ["vgv_allowed", "vgv_forbidden"],
+  "dictionaries": [
+    "vgv_allowed",
+    "vgv_forbidden"
+  ],
   "dictionaryDefinitions": [
     {
       "name": "vgv_allowed",
@@ -16,13 +19,33 @@
   ],
   "useGitignore": true,
   "words": [
+    "Bricolage",
+    "colour",
+    "colours",
     "Contador",
+    "FREEPLIX",
+    "Freeplix",
+    "freeplix",
+    "fvm",
+    "FVM",
+    "Grotesque",
+    "gstatic",
+    "Hola",
+    "iamnabink",
+    "Licence",
+    "licence",
     "localizable",
     "mostrado",
-    "página",
-    "Texto",
-    "Hola",
     "Mundo",
-    "Saludo"
+    "nocookie",
+    "p\u00e1gina",
+    "Saludo",
+    "sandboxed",
+    "sprocket",
+    "Texto",
+    "tmdb",
+    "TMDB",
+    "Watchlist",
+    "watchlist"
   ]
 }

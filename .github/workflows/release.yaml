@@ -69,6 +69,12 @@ jobs:
           cd build/web
           zip -r "../../freeplix-web-${{ steps.version.outputs.value }}.zip" .
 
+      # enablement: true turns Pages on the first time this runs, so the
+      # repo does not need Pages switched on by hand beforehand.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
