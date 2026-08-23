@@ -28,8 +28,7 @@ class SearchState extends Equatable {
 /// Search waits for a pause in typing before it asks TMDB anything —
 /// one request per thought, not one per keystroke.
 class SearchCubit extends Cubit<SearchState> {
-  SearchCubit({required this._repository})
-    : super(const SearchState());
+  SearchCubit({required this._repository}) : super(const SearchState());
 
   static const _debounce = Duration(milliseconds: 320);
 

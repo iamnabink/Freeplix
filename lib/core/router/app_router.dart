@@ -22,8 +22,7 @@ GoRouter createRouter() {
         routes: [
           GoRoute(
             path: '/',
-            pageBuilder: (context, state) =>
-                _fade(state, const HomePage()),
+            pageBuilder: (context, state) => _fade(state, const HomePage()),
           ),
           GoRoute(
             path: '/movies',

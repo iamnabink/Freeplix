@@ -291,7 +291,8 @@ class _BelowStage extends StatelessWidget {
     final detail = state.detail!;
 
     // Only worth a switcher when there is more than one thing to switch to.
-    final hasChoice = state.sources.isNotEmpty && state.hasTrailer ||
+    final hasChoice =
+        state.sources.isNotEmpty && state.hasTrailer ||
         state.sources.length > 1;
 
     return Column(

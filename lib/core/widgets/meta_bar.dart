@@ -86,7 +86,11 @@ class Eyebrow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text.toUpperCase(),
-      style: AppTypography.monoStyle(size: 10, letterSpacing: 2.4, color: color),
+      style: AppTypography.monoStyle(
+        size: 10,
+        letterSpacing: 2.4,
+        color: color,
+      ),
     );
   }
 }

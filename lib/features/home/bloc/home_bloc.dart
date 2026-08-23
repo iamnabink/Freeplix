@@ -8,15 +8,17 @@ part 'home_event.dart';
 part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  HomeBloc({required this._repository})
-    : super(const HomeState()) {
+  HomeBloc({required this._repository}) : super(const HomeState()) {
     on<HomeRequested>(_onRequested);
     on<HomeSpotlightAdvanced>(_onSpotlightAdvanced);
   }
 
   final TmdbRepository _repository;
 
-  Future<void> _onRequested(HomeRequested event, Emitter<HomeState> emit) async {
+  Future<void> _onRequested(
+    HomeRequested event,
+    Emitter<HomeState> emit,
+  ) async {
     emit(state.copyWith(status: HomeStatus.loading));
 
     try {

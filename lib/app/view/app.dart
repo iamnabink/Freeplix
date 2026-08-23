@@ -26,8 +26,7 @@ class _AppState extends State<App> {
     return RepositoryProvider.value(
       value: _tmdbRepository,
       child: BlocProvider(
-        create: (_) =>
-            WatchlistCubit(repository: widget.watchlistRepository),
+        create: (_) => WatchlistCubit(repository: widget.watchlistRepository),
         child: MaterialApp.router(
           title: 'Freeplix',
           debugShowCheckedModeBanner: false,

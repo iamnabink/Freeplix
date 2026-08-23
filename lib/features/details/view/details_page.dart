@@ -192,8 +192,7 @@ class _Headline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompact =
-        MediaQuery.sizeOf(context).width < Breakpoints.compact;
+    final isCompact = MediaQuery.sizeOf(context).width < Breakpoints.compact;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

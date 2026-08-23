@@ -130,7 +130,10 @@ class EpisodeList extends StatelessWidget {
         for (final episode in episodes)
           Padding(
             padding: const EdgeInsets.only(bottom: Insets.sm),
-            child: _EpisodeTile(episode: episode, onPlay: () => onPlay(episode)),
+            child: _EpisodeTile(
+              episode: episode,
+              onPlay: () => onPlay(episode),
+            ),
           ),
       ],
     );
@@ -146,8 +149,7 @@ class _EpisodeTile extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final hovered = useState(false);
-    final isCompact =
-        MediaQuery.sizeOf(context).width < Breakpoints.compact;
+    final isCompact = MediaQuery.sizeOf(context).width < Breakpoints.compact;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -175,9 +177,7 @@ class _EpisodeTile extends HookWidget {
                   style: AppTypography.monoStyle(
                     size: 18,
                     weight: FontWeight.w700,
-                    color: hovered.value
-                        ? AppColors.lamp
-                        : AppColors.screenDim,
+                    color: hovered.value ? AppColors.lamp : AppColors.screenDim,
                   ),
                 ),
               ),
@@ -210,8 +210,7 @@ class _EpisodeTile extends HookWidget {
                     MetaBar(
                       entries: [
                         if (episode.runtime != null) '${episode.runtime}m',
-                        if (episode.airDate != null)
-                          '${episode.airDate!.year}',
+                        if (episode.airDate != null) '${episode.airDate!.year}',
                         if (!episode.hasAired) 'Unaired',
                       ],
                       size: 10,

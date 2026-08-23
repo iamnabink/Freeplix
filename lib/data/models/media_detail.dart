@@ -41,7 +41,8 @@ class MediaDetail extends Equatable {
   }) {
     final credits = json['credits'] as Map<String, dynamic>? ?? const {};
     final videos = json['videos'] as Map<String, dynamic>? ?? const {};
-    final similar = json['recommendations'] as Map<String, dynamic>? ??
+    final similar =
+        json['recommendations'] as Map<String, dynamic>? ??
         json['similar'] as Map<String, dynamic>? ??
         const {};
     final date =
@@ -58,7 +59,8 @@ class MediaDetail extends Equatable {
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0,
       voteCount: json['vote_count'] as int? ?? 0,
       releaseDate: date.isEmpty ? null : DateTime.tryParse(date),
-      runtimeMinutes: json['runtime'] as int? ??
+      runtimeMinutes:
+          json['runtime'] as int? ??
           (json['episode_run_time'] as List<dynamic>?)
               ?.whereType<int>()
               .firstOrNull,
@@ -174,13 +176,14 @@ class MediaDetail extends Equatable {
       .toList();
 
   Video? get trailer {
-    final ranked = [...videos]..sort((a, b) {
-      int score(Video v) =>
-          (v.type == 'Trailer' ? 4 : 0) +
-          (v.type == 'Teaser' ? 2 : 0) +
-          (v.official ? 1 : 0);
-      return score(b).compareTo(score(a));
-    });
+    final ranked = [...videos]
+      ..sort((a, b) {
+        int score(Video v) =>
+            (v.type == 'Trailer' ? 4 : 0) +
+            (v.type == 'Teaser' ? 2 : 0) +
+            (v.official ? 1 : 0);
+        return score(b).compareTo(score(a));
+      });
     return ranked.firstOrNull;
   }
 

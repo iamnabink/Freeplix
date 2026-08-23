@@ -68,9 +68,7 @@ class AppShell extends HookWidget {
           ],
         ),
       ),
-      bottomNavigationBar: isCompact
-          ? _BottomBar(location: location)
-          : null,
+      bottomNavigationBar: isCompact ? _BottomBar(location: location) : null,
       floatingActionButton: isCompact
           ? FloatingActionButton.small(
               onPressed: () => context.go('/search'),

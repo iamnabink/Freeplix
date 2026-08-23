@@ -12,8 +12,7 @@ Widget buildEmbed(String url) {
 
   if (_registered.add(viewType)) {
     ui_web.platformViewRegistry.registerViewFactory(viewType, (int _) {
-      final frame = web.document.createElement('iframe')
-          as web.HTMLIFrameElement
+      final frame = web.document.createElement('iframe') as web.HTMLIFrameElement
         ..src = url
         ..width = '100%'
         ..height = '100%'

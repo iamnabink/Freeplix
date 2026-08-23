@@ -10,7 +10,8 @@ class NotFoundPage extends StatelessWidget {
     return EmptyView(
       eyebrow: 'Reel missing',
       icon: Icons.videocam_off_outlined,
-      message: "That page isn't in the catalogue. The address may have "
+      message:
+          "That page isn't in the catalogue. The address may have "
           'changed, or the title may have been removed from TMDB.',
       action: FilledButton(
         onPressed: () => context.go('/'),

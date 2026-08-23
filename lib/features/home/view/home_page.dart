@@ -35,8 +35,7 @@ class HomeView extends StatelessWidget {
         if (state.status == HomeStatus.failure) {
           return ErrorView(
             message: state.error ?? 'Freeplix could not reach TMDB.',
-            onRetry: () =>
-                context.read<HomeBloc>().add(const HomeRequested()),
+            onRetry: () => context.read<HomeBloc>().add(const HomeRequested()),
           );
         }
 
@@ -48,7 +47,9 @@ class HomeView extends StatelessWidget {
         return CustomScrollView(
           slivers: [
             if (featured != null)
-              SliverToBoxAdapter(child: _Spotlight(item: featured, state: state))
+              SliverToBoxAdapter(
+                child: _Spotlight(item: featured, state: state),
+              )
             else
               const SliverToBoxAdapter(child: SizedBox(height: Insets.xl)),
             SliverPadding(

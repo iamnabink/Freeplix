@@ -75,20 +75,18 @@ class _GridMetrics {
   factory _GridMetrics.of(double width) {
     const target = 180.0;
     final columns = (width / target).floor().clamp(2, 8);
-    final cardWidth =
-        (width - (columns - 1) * Insets.md) / columns;
+    final cardWidth = (width - (columns - 1) * Insets.md) / columns;
     return _GridMetrics(columns, cardWidth);
   }
 
   final int columns;
   final double cardWidth;
 
-  SliverGridDelegate get delegate =>
-      SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
-        crossAxisSpacing: Insets.md,
-        mainAxisSpacing: Insets.lg,
-        // Poster (2:3) plus the two lines of type beneath it.
-        childAspectRatio: cardWidth / (cardWidth * 1.5 + 46),
-      );
+  SliverGridDelegate get delegate => SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: columns,
+    crossAxisSpacing: Insets.md,
+    mainAxisSpacing: Insets.lg,
+    // Poster (2:3) plus the two lines of type beneath it.
+    childAspectRatio: cardWidth / (cardWidth * 1.5 + 46),
+  );
 }

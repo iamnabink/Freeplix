@@ -79,8 +79,7 @@ class Episode extends Equatable {
 
   String? get still => tmdbImage(stillPath, BackdropSize.w780.path);
 
-  bool get hasAired =>
-      airDate != null && airDate!.isBefore(DateTime.now());
+  bool get hasAired => airDate != null && airDate!.isBefore(DateTime.now());
 
   @override
   List<Object?> get props => [id, seasonNumber, episodeNumber];

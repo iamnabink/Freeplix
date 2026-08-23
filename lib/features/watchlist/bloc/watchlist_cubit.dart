@@ -17,8 +17,7 @@ class WatchlistState extends Equatable {
 
 /// My List. Reads once at startup, writes through on every change.
 class WatchlistCubit extends Cubit<WatchlistState> {
-  WatchlistCubit({required this._repository})
-    : super(const WatchlistState()) {
+  WatchlistCubit({required this._repository}) : super(const WatchlistState()) {
     emit(WatchlistState(items: _repository.load()));
   }
 

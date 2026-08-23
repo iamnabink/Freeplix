@@ -46,8 +46,7 @@ class BrowseState extends Equatable {
   final bool hasMore;
   final String? error;
 
-  Genre? get activeGenre =>
-      genres.where((g) => g.id == genreId).firstOrNull;
+  Genre? get activeGenre => genres.where((g) => g.id == genreId).firstOrNull;
 
   BrowseState copyWith({
     BrowseStatus? status,

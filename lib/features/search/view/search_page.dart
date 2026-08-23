@@ -38,8 +38,7 @@ class SearchView extends HookWidget {
     final controller = useTextEditingController(text: initialQuery);
     final focus = useFocusNode();
     final cubit = context.read<SearchCubit>();
-    final isCompact =
-        MediaQuery.sizeOf(context).width < Breakpoints.compact;
+    final isCompact = MediaQuery.sizeOf(context).width < Breakpoints.compact;
 
     useEffect(() {
       focus.requestFocus();
@@ -138,8 +137,7 @@ class _Results extends StatelessWidget {
               message: 'Start typing and results appear as you go.',
             ),
           ),
-          SearchStatus.typing ||
-          SearchStatus.loading => SliverPadding(
+          SearchStatus.typing || SearchStatus.loading => SliverPadding(
             padding: padding,
             sliver: const MediaGridSkeletonSliver(count: 12),
           ),
@@ -150,16 +148,15 @@ class _Results extends StatelessWidget {
               onRetry: context.read<SearchCubit>().retry,
             ),
           ),
-          SearchStatus.ready when state.results.isEmpty =>
-            SliverToBoxAdapter(
-              child: EmptyView(
-                compact: true,
-                eyebrow: 'No matches',
-                message:
-                    'Nothing in TMDB matches "${state.query}". '
-                    'Check the spelling, or try fewer words.',
-              ),
+          SearchStatus.ready when state.results.isEmpty => SliverToBoxAdapter(
+            child: EmptyView(
+              compact: true,
+              eyebrow: 'No matches',
+              message:
+                  'Nothing in TMDB matches "${state.query}". '
+                  'Check the spelling, or try fewer words.',
             ),
+          ),
           SearchStatus.ready => SliverPadding(
             padding: padding,
             sliver: MediaGridSliver(

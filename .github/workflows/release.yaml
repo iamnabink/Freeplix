@@ -87,7 +87,7 @@ jobs:
           generate_release_notes: true
           files: freeplix-web-${{ steps.version.outputs.value }}.zip
           body: |
-            Freeplix ${{ steps.version.outputs.value }} — an open-source,
+            Freeplix ${{ steps.version.outputs.value }} — an open source,
             ad-free movie and TV catalogue built with Flutter.
 
             **Live:** https://iamnabink.github.io/Freeplix/
