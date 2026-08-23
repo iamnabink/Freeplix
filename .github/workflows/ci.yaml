@@ -1,0 +1,41 @@
+name: ci
+
+# Runs on every pull request. Releases are tag-driven and live in
+# release.yaml; this exists so a PR cannot merge unverified.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: analyze and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.8
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      # No secrets needed: the build only has to compile, not reach TMDB.
+      - name: Build web
+        run: flutter build web --release --base-href "/Freeplix/"

@@ -368,6 +368,9 @@ the tests pass, before anything merges:
 fvm flutter analyze && fvm flutter test
 ```
 
+CI runs the same checks plus a web build on every pull request. `main` takes
+changes through pull requests only.
+
 Views stay logic-free, repositories own caching, and nothing is
 code-generated. If a decision is not the obvious one, leave a comment saying
 why — there are several of those already, and they are the most useful lines

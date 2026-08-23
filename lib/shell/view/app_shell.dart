@@ -19,9 +19,7 @@ class ShellChrome extends InheritedWidget {
   final double headerHeight;
 
   static double of(BuildContext context) =>
-      context
-          .dependOnInheritedWidgetOfExactType<ShellChrome>()
-          ?.headerHeight ??
+      context.dependOnInheritedWidgetOfExactType<ShellChrome>()?.headerHeight ??
       0;
 
   @override

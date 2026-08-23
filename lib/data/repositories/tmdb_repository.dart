@@ -140,11 +140,11 @@ class TmdbRepository {
     );
     final providers =
         (json['results'] as List<dynamic>?)
-            ?.whereType<Map<String, dynamic>>()
-            .map(WatchProviderRef.fromJson)
-            .toList() ??
-        <WatchProviderRef>[]
-      ..sort((a, b) => a.priority.compareTo(b.priority));
+                  ?.whereType<Map<String, dynamic>>()
+                  .map(WatchProviderRef.fromJson)
+                  .toList() ??
+              <WatchProviderRef>[]
+          ..sort((a, b) => a.priority.compareTo(b.priority));
     return _providerCache[key] = providers.take(24).toList();
   }
 

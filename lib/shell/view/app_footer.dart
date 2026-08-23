@@ -26,8 +26,7 @@ class AppFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompact =
-        MediaQuery.sizeOf(context).width < Breakpoints.compact;
+    final isCompact = MediaQuery.sizeOf(context).width < Breakpoints.compact;
 
     return Padding(
       padding: const EdgeInsets.only(top: Insets.xxxl),
@@ -281,16 +280,12 @@ class _TextLink extends HookWidget {
                 ? AppTypography.monoStyle(
                     size: 10,
                     letterSpacing: 0.8,
-                    color: hovered.value
-                        ? AppColors.lamp
-                        : AppColors.screenDim,
+                    color: hovered.value ? AppColors.lamp : AppColors.screenDim,
                   )
                 : AppTypography.bodyStyle(
                     size: 13,
                     weight: 600,
-                    color: hovered.value
-                        ? AppColors.lamp
-                        : AppColors.emulsion,
+                    color: hovered.value ? AppColors.lamp : AppColors.emulsion,
                   ),
           ),
         ),

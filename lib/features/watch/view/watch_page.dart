@@ -101,7 +101,10 @@ class WatchView extends HookWidget {
           final detail = state.detail;
           if (detail == null) return const LoadingView();
 
-          return _RecordProgress(state: state, child: _Body(state: state, wide: wide));
+          return _RecordProgress(
+            state: state,
+            child: _Body(state: state, wide: wide),
+          );
         },
       ),
     );
@@ -146,7 +149,6 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(
@@ -156,7 +158,9 @@ class _Body extends StatelessWidget {
             onToggleWide: () => wide.value = !wide.value,
           ),
         ),
-        SliverToBoxAdapter(child: _Stage(state: state, wide: wide.value)),
+        SliverToBoxAdapter(
+          child: _Stage(state: state, wide: wide.value),
+        ),
         SliverToBoxAdapter(
           child: PagePadding(
             vertical: Insets.lg,
@@ -337,9 +341,7 @@ class _Stage extends StatelessWidget {
               height: height,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(wide ? 0 : Radii.md),
-                border: wide
-                    ? null
-                    : Border.all(color: AppColors.ash),
+                border: wide ? null : Border.all(color: AppColors.ash),
                 boxShadow: wide
                     ? null
                     : [
