@@ -18,13 +18,9 @@ Widget buildEmbed(String url) {
         ..height = '100%'
         ..allowFullscreen = true
         ..allow = 'autoplay; fullscreen; encrypted-media; picture-in-picture'
-        // Deliberately omits allow-popups and allow-top-navigation: an
-        // embedded player never has a reason to open a window or steer the
-        // page, and blocking it here stops pop-unders at the frame boundary.
-        ..setAttribute(
-          'sandbox',
-          'allow-scripts allow-same-origin allow-presentation allow-forms',
-        )
+        // No sandbox attribute: some providers refuse to render inside one.
+        // Without it the framed page can open windows and navigate the top
+        // frame, so only point FREEPLIX_SOURCES at hosts you trust.
         // YouTube refuses to embed when it gets no referrer (error 153), so
         // send the origin but never the full path.
         ..setAttribute('referrerpolicy', 'strict-origin-when-cross-origin')
