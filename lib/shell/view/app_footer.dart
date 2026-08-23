@@ -88,9 +88,8 @@ class _Identity extends StatelessWidget {
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
           child: Text(
-            'An open source catalogue for films and series, built as an '
-            'educational project. Non-commercial, with no accounts and '
-            'no tracking.',
+            'An open source catalogue for films and series, built for '
+            'learning. MIT licensed, with no accounts and no tracking.',
             style: AppTypography.bodyStyle(size: 13.5),
           ),
         ),
@@ -145,16 +144,30 @@ class _Attribution extends StatelessWidget {
       runSpacing: Insets.xs,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        // Required by TMDB's terms, and honest besides.
         ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: Text(
-            AppConfig.tmdbAttribution,
-            style: AppTypography.monoStyle(
-              size: 10,
-              letterSpacing: 0.8,
-              color: AppColors.screenDim,
-            ),
+          constraints: const BoxConstraints(maxWidth: 620),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AppConfig.purposeNotice,
+                style: AppTypography.monoStyle(
+                  size: 10,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 5),
+              // Wording required by TMDB's terms of use.
+              Text(
+                AppConfig.tmdbAttribution,
+                style: AppTypography.monoStyle(
+                  size: 10,
+                  letterSpacing: 0.8,
+                  color: AppColors.screenDim,
+                ),
+              ),
+            ],
           ),
         ),
         const _TextLink(

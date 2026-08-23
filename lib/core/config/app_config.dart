@@ -27,6 +27,11 @@ abstract final class AppConfig {
   static const authorUrl = 'https://github.com/iamnabink';
   static const authorName = 'Nabraj Khadka';
   static const authorHandle = 'iamnabink';
+  /// Required by TMDB's terms of use — the wording is theirs, not ours.
   static const tmdbAttribution =
       'This product uses the TMDB API but is not endorsed or certified by TMDB.';
+
+  static const purposeNotice =
+      'Freeplix is an open source project built purely for learning and '
+      'education — a worked example of Flutter, BLoC and a public API.';
 }

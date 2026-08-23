@@ -6,7 +6,7 @@ first; iOS and Android are wired up but not yet the focus.
 
 **Live:** https://iamnabink.github.io/Freeplix/
 
-An educational, non-commercial project. No accounts, no backend, no tracking.
+An open source project built for learning. No accounts, no backend, no tracking.
 
 ---
 

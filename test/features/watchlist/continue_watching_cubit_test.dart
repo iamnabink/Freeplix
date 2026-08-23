@@ -31,7 +31,7 @@ void main() {
     test('records what was opened, most recent first', () async {
       final cubit = ContinueWatchingCubit(repository: repository);
 
-      await cubit.record(detail(1, 'First'), at: DateTime(2026, 1, 1));
+      await cubit.record(detail(1, 'First'), at: DateTime(2026));
       await cubit.record(detail(2, 'Second'), at: DateTime(2026, 1, 2));
 
       expect(cubit.state.entries.map((e) => e.title), ['Second', 'First']);
@@ -41,7 +41,7 @@ void main() {
       final cubit = ContinueWatchingCubit(repository: repository);
       final show = detail(1396, 'Breaking Bad', type: MediaType.tv);
 
-      await cubit.record(show, season: 1, episode: 1, at: DateTime(2026, 1, 1));
+      await cubit.record(show, season: 1, episode: 1, at: DateTime(2026));
       await cubit.record(detail(2, 'Other'), at: DateTime(2026, 1, 2));
       await cubit.record(show, season: 2, episode: 7, at: DateTime(2026, 1, 3));
 
