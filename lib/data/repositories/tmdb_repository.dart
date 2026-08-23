@@ -1,4 +1,5 @@
 import 'package:freeplix/core/network/tmdb_client.dart';
+import 'package:freeplix/data/models/discovery_refs.dart';
 import 'package:freeplix/data/models/genre.dart';
 import 'package:freeplix/data/models/media_detail.dart';
 import 'package:freeplix/data/models/media_filter.dart';
@@ -37,6 +38,7 @@ class TmdbRepository {
   final TmdbClient _client;
   final _detailCache = <String, MediaDetail>{};
   final _genreCache = <MediaType, List<Genre>>{};
+  final _providerCache = <String, List<WatchProviderRef>>{};
 
   Future<MediaPage> trending({String window = 'week', int page = 1}) =>
       _page('/trending/all/$window', page: page);
@@ -87,6 +89,55 @@ class TmdbRepository {
             .toList() ??
         const <PersonRef>[];
     return people..sort((a, b) => b.popularity.compareTo(a.popularity));
+  }
+
+  Future<List<KeywordRef>> searchKeywords(String query) async {
+    if (query.trim().isEmpty) return const [];
+    final json = await _client.get(
+      '/search/keyword',
+      query: {'query': query.trim()},
+    );
+    return (json['results'] as List<dynamic>?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(KeywordRef.fromJson)
+            .toList() ??
+        const [];
+  }
+
+  Future<List<CompanyRef>> searchCompanies(String query) async {
+    if (query.trim().isEmpty) return const [];
+    final json = await _client.get(
+      '/search/company',
+      query: {'query': query.trim()},
+    );
+    return (json['results'] as List<dynamic>?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(CompanyRef.fromJson)
+            .toList() ??
+        const [];
+  }
+
+  /// Services carrying titles in [region], most prominent first.
+  Future<List<WatchProviderRef>> watchProviders(
+    MediaType type,
+    String region,
+  ) async {
+    final key = '${type.wire}/$region';
+    final cached = _providerCache[key];
+    if (cached != null) return cached;
+
+    final json = await _client.get(
+      '/watch/providers/${type.wire}',
+      query: {'watch_region': region},
+    );
+    final providers =
+        (json['results'] as List<dynamic>?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(WatchProviderRef.fromJson)
+            .toList() ??
+        <WatchProviderRef>[]
+      ..sort((a, b) => a.priority.compareTo(b.priority));
+    return _providerCache[key] = providers.take(24).toList();
   }
 
   Future<List<Genre>> genres(MediaType type) async {

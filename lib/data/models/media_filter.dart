@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:freeplix/data/models/discovery_refs.dart';
 import 'package:freeplix/data/models/media_type.dart';
 import 'package:freeplix/data/models/person_ref.dart';
 
@@ -121,6 +122,11 @@ class MediaFilter extends Equatable {
   const MediaFilter({
     this.genreIds = const {},
     this.cast = const {},
+    this.keywords = const {},
+    this.companies = const {},
+    this.provider,
+    this.watchRegion = 'US',
+    this.runtimeMax,
     this.language,
     this.country,
     this.minRating,
@@ -135,6 +141,15 @@ class MediaFilter extends Equatable {
   /// the parameter for series, so the cast filter is offered for films.
   final Set<PersonRef> cast;
 
+  /// TMDB tags. `with_keywords` is an AND across ids.
+  final Set<KeywordRef> keywords;
+  final Set<CompanyRef> companies;
+
+  /// A streaming service, meaningful only alongside [watchRegion].
+  final WatchProviderRef? provider;
+  final String watchRegion;
+
+  final int? runtimeMax;
   final String? language;
   final String? country;
   final double? minRating;
@@ -146,6 +161,10 @@ class MediaFilter extends Equatable {
   int get activeCount =>
       genreIds.length +
       cast.length +
+      keywords.length +
+      companies.length +
+      (provider == null ? 0 : 1) +
+      (runtimeMax == null ? 0 : 1) +
       (language == null ? 0 : 1) +
       (country == null ? 0 : 1) +
       (minRating == null ? 0 : 1) +
@@ -178,6 +197,15 @@ class MediaFilter extends Equatable {
       if (genreIds.isNotEmpty) 'with_genres': genreIds.join(','),
       if (cast.isNotEmpty && type == MediaType.movie)
         'with_cast': cast.map((p) => p.id).join(','),
+      if (keywords.isNotEmpty)
+        'with_keywords': keywords.map((k) => k.id).join(','),
+      if (companies.isNotEmpty)
+        'with_companies': companies.map((c) => c.id).join(','),
+      if (provider != null) ...{
+        'with_watch_providers': provider!.id,
+        'watch_region': watchRegion,
+      },
+      if (runtimeMax != null) 'with_runtime.lte': runtimeMax,
       if (language != null) 'with_original_language': language,
       if (country != null) 'with_origin_country': country,
       if (minRating != null) 'vote_average.gte': minRating,
@@ -189,6 +217,11 @@ class MediaFilter extends Equatable {
   MediaFilter copyWith({
     Set<int>? genreIds,
     Set<PersonRef>? cast,
+    Set<KeywordRef>? keywords,
+    Set<CompanyRef>? companies,
+    WatchProviderRef? Function()? provider,
+    String? watchRegion,
+    int? Function()? runtimeMax,
     String? Function()? language,
     String? Function()? country,
     double? Function()? minRating,
@@ -199,6 +232,11 @@ class MediaFilter extends Equatable {
     return MediaFilter(
       genreIds: genreIds ?? this.genreIds,
       cast: cast ?? this.cast,
+      keywords: keywords ?? this.keywords,
+      companies: companies ?? this.companies,
+      provider: provider == null ? this.provider : provider(),
+      watchRegion: watchRegion ?? this.watchRegion,
+      runtimeMax: runtimeMax == null ? this.runtimeMax : runtimeMax(),
       language: language == null ? this.language : language(),
       country: country == null ? this.country : country(),
       minRating: minRating == null ? this.minRating : minRating(),
@@ -208,12 +246,17 @@ class MediaFilter extends Equatable {
     );
   }
 
-  MediaFilter cleared() => MediaFilter(sort: sort);
+  MediaFilter cleared() => MediaFilter(sort: sort, watchRegion: watchRegion);
 
   @override
   List<Object?> get props => [
     genreIds,
     cast,
+    keywords,
+    companies,
+    provider,
+    watchRegion,
+    runtimeMax,
     language,
     country,
     minRating,

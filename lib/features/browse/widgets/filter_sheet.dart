@@ -1,3 +1,5 @@
+// ignore_for_file: document_ignores
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -8,6 +10,7 @@ import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/net_image.dart';
+import 'package:freeplix/data/models/discovery_refs.dart';
 import 'package:freeplix/data/models/genre.dart';
 import 'package:freeplix/data/models/media_filter.dart';
 import 'package:freeplix/data/models/media_type.dart';
@@ -135,7 +138,77 @@ class FilterSheet extends HookWidget {
                       ),
                     ),
                   if (type == MediaType.movie)
-                    _CastPicker(draft: draft, repository: repository),
+                    _AsyncPicker<PersonRef>(
+                      title: 'Cast',
+                      hint:
+                          'Films featuring a performer. Pick more than one '
+                          'for films they share.',
+                      placeholder: 'Search for an actor',
+                      icon: Icons.person_search_rounded,
+                      search: repository.searchPeople,
+                      labelOf: (p) => p.name,
+                      avatarOf: (p) => p.profile,
+                      selected: draft.value.cast,
+                      onChanged: (next) =>
+                          draft.value = draft.value.copyWith(cast: next),
+                    ),
+                  _AsyncPicker<KeywordRef>(
+                    title: 'Keyword',
+                    hint:
+                        'What a title is about, rather than its genre — '
+                        'try "heist" or "time travel".',
+                    placeholder: 'Search keywords',
+                    icon: Icons.local_offer_outlined,
+                    search: repository.searchKeywords,
+                    labelOf: (k) => k.name,
+                    selected: draft.value.keywords,
+                    onChanged: (next) =>
+                        draft.value = draft.value.copyWith(keywords: next),
+                  ),
+                  _AsyncPicker<CompanyRef>(
+                    title: 'Studio',
+                    hint: 'Everything from one production company',
+                    placeholder: 'Search studios',
+                    icon: Icons.apartment_rounded,
+                    search: repository.searchCompanies,
+                    labelOf: (c) => c.name,
+                    selected: draft.value.companies,
+                    onChanged: (next) =>
+                        draft.value = draft.value.copyWith(companies: next),
+                  ),
+                  _Providers(
+                    draft: draft,
+                    repository: repository,
+                    type: type,
+                  ),
+                  if (type == MediaType.movie)
+                    _Section(
+                      title: 'Runtime',
+                      child: Wrap(
+                        spacing: Insets.xs,
+                        runSpacing: Insets.xs,
+                        children: [
+                          FilterChipTile(
+                            label: 'Any',
+                            selected: draft.value.runtimeMax == null,
+                            onTap: () => draft.value = draft.value.copyWith(
+                              runtimeMax: () => null,
+                            ),
+                          ),
+                          for (final limit in [90, 120, 150])
+                            FilterChipTile(
+                              label:
+                                  'Under ${limit ~/ 60}h'
+                                  '${limit % 60 == 0 ? '' : ' ${limit % 60}m'}',
+                              icon: Icons.schedule_rounded,
+                              selected: draft.value.runtimeMax == limit,
+                              onTap: () => draft.value = draft.value.copyWith(
+                                runtimeMax: () => limit,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   _Section(
                     title: 'Original language',
                     hint: 'The language a title was made in',
@@ -433,21 +506,39 @@ class _Footer extends StatelessWidget {
   }
 }
 
-/// Search TMDB for a person and narrow the catalogue to their films.
+/// One async search control, shared by cast, keywords and studios.
 ///
-/// TMDB has no character filter — it indexes who appeared, not who they
-/// played — so this filters by performer.
-class _CastPicker extends HookWidget {
-  const _CastPicker({required this.draft, required this.repository});
+/// Each of those is "type a few letters, pick from what TMDB returns, keep
+/// the chosen ones as chips" — so they are one widget, not three.
+class _AsyncPicker<T> extends HookWidget {
+  const _AsyncPicker({
+    required this.title,
+    required this.hint,
+    required this.placeholder,
+    required this.icon,
+    required this.search,
+    required this.labelOf,
+    required this.selected,
+    required this.onChanged,
+    this.avatarOf,
+    super.key,
+  });
 
-  final ValueNotifier<MediaFilter> draft;
-  final TmdbRepository repository;
+  final String title;
+  final String hint;
+  final String placeholder;
+  final IconData icon;
+  final Future<List<T>> Function(String query) search;
+  final String Function(T item) labelOf;
+  final String? Function(T item)? avatarOf;
+  final Set<T> selected;
+  final ValueChanged<Set<T>> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final controller = useTextEditingController();
     final query = useState('');
-    final results = useState<List<PersonRef>>(const []);
+    final results = useState<List<T>>(const []);
     final loading = useState(false);
 
     useEffect(() {
@@ -461,8 +552,8 @@ class _CastPicker extends HookWidget {
       loading.value = true;
       final timer = Timer(const Duration(milliseconds: 350), () async {
         try {
-          final people = await repository.searchPeople(term);
-          if (!cancelled) results.value = people.take(10).toList();
+          final found = await search(term);
+          if (!cancelled) results.value = found.take(10).toList();
         } on ApiException {
           if (!cancelled) results.value = const [];
         } finally {
@@ -476,27 +567,21 @@ class _CastPicker extends HookWidget {
       };
     }, [query.value]);
 
-    final chosen = draft.value.cast;
-
     return _Section(
-      title: 'Cast',
-      hint:
-          'Films featuring a performer. Pick more than one for films they '
-          'share.',
+      title: title,
+      hint: hint,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (chosen.isNotEmpty) ...[
+          if (selected.isNotEmpty) ...[
             Wrap(
               spacing: Insets.xs,
               runSpacing: Insets.xs,
               children: [
-                for (final person in chosen)
+                for (final item in selected)
                   ActiveFilterChip(
-                    label: person.name,
-                    onRemove: () => draft.value = draft.value.copyWith(
-                      cast: {...chosen}..remove(person),
-                    ),
+                    label: labelOf(item),
+                    onRemove: () => onChanged({...selected}..remove(item)),
                   ),
               ],
             ),
@@ -510,13 +595,9 @@ class _CastPicker extends HookWidget {
               color: AppColors.emulsion,
             ),
             decoration: InputDecoration(
-              hintText: 'Search for an actor',
+              hintText: placeholder,
               isDense: true,
-              prefixIcon: const Icon(
-                Icons.person_search_rounded,
-                size: 18,
-                color: AppColors.screenDim,
-              ),
+              prefixIcon: Icon(icon, size: 18, color: AppColors.screenDim),
               suffixIcon: loading.value
                   ? const Padding(
                       padding: EdgeInsets.all(12),
@@ -535,14 +616,13 @@ class _CastPicker extends HookWidget {
               spacing: Insets.xs,
               runSpacing: Insets.xs,
               children: [
-                for (final person in results.value)
-                  if (!chosen.contains(person))
-                    _PersonChip(
-                      person: person,
+                for (final item in results.value)
+                  if (!selected.contains(item))
+                    _ResultChip(
+                      label: labelOf(item),
+                      avatar: avatarOf?.call(item),
                       onTap: () {
-                        draft.value = draft.value.copyWith(
-                          cast: {...chosen, person},
-                        );
+                        onChanged({...selected, item});
                         controller.clear();
                         query.value = '';
                       },
@@ -556,10 +636,15 @@ class _CastPicker extends HookWidget {
   }
 }
 
-class _PersonChip extends StatelessWidget {
-  const _PersonChip({required this.person, required this.onTap});
+class _ResultChip extends StatelessWidget {
+  const _ResultChip({
+    required this.label,
+    required this.onTap,
+    this.avatar,
+  });
 
-  final PersonRef person;
+  final String label;
+  final String? avatar;
   final VoidCallback onTap;
 
   @override
@@ -569,7 +654,10 @@ class _PersonChip extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.only(right: Insets.sm),
+          padding: EdgeInsets.only(
+            left: avatar == null ? Insets.sm : 0,
+            right: Insets.sm,
+          ),
           decoration: BoxDecoration(
             color: AppColors.soot,
             borderRadius: BorderRadius.circular(Radii.pill),
@@ -578,19 +666,21 @@ class _PersonChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ClipOval(
-                child: SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: NetImage(
-                    url: person.profile,
-                    fallbackIcon: Icons.person_outline_rounded,
+              if (avatar != null) ...[
+                ClipOval(
+                  child: SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: NetImage(
+                      url: avatar,
+                      fallbackIcon: Icons.person_outline_rounded,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: Insets.xs),
+                const SizedBox(width: Insets.xs),
+              ],
               Text(
-                person.name,
+                label,
                 style: AppTypography.bodyStyle(
                   size: 12.5,
                   weight: 600,
@@ -599,6 +689,102 @@ class _PersonChip extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Streaming services carrying titles in the chosen region.
+class _Providers extends HookWidget {
+  const _Providers({
+    required this.draft,
+    required this.repository,
+    required this.type,
+  });
+
+  final ValueNotifier<MediaFilter> draft;
+  final TmdbRepository repository;
+  final MediaType type;
+
+  static const _regions = [
+    ('US', 'United States'),
+    ('IN', 'India'),
+    ('GB', 'United Kingdom'),
+    ('NP', 'Nepal'),
+    ('AU', 'Australia'),
+    ('CA', 'Canada'),
+    ('DE', 'Germany'),
+    ('JP', 'Japan'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final region = draft.value.watchRegion;
+    final providers = useState<List<WatchProviderRef>>(const []);
+
+    useEffect(() {
+      var cancelled = false;
+      unawaited(() async {
+        try {
+          final found = await repository.watchProviders(type, region);
+          if (!cancelled) providers.value = found;
+        } on ApiException {
+          if (!cancelled) providers.value = const [];
+        }
+      }());
+      return () => cancelled = true;
+    }, [region, type]);
+
+    return _Section(
+      title: 'Streaming on',
+      hint: 'Availability differs by country, so pick a region first',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: Insets.xs,
+            runSpacing: Insets.xs,
+            children: [
+              for (final (code, label) in _regions)
+                FilterChipTile(
+                  label: label,
+                  selected: region == code,
+                  onTap: () => draft.value = draft.value.copyWith(
+                    watchRegion: code,
+                    provider: () => null,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: Insets.sm),
+          if (providers.value.isEmpty)
+            Text(
+              'Loading services…',
+              style: AppTypography.bodyStyle(size: 12.5),
+            )
+          else
+            Wrap(
+              spacing: Insets.xs,
+              runSpacing: Insets.xs,
+              children: [
+                FilterChipTile(
+                  label: 'Any',
+                  selected: draft.value.provider == null,
+                  onTap: () =>
+                      draft.value = draft.value.copyWith(provider: () => null),
+                ),
+                for (final service in providers.value)
+                  FilterChipTile(
+                    label: service.name,
+                    selected: draft.value.provider == service,
+                    onTap: () => draft.value = draft.value.copyWith(
+                      provider: () =>
+                          draft.value.provider == service ? null : service,
+                    ),
+                  ),
+              ],
+            ),
+        ],
       ),
     );
   }

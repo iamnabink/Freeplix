@@ -8,6 +8,7 @@ import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/media_grid.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/state_views.dart';
+import 'package:freeplix/data/models/discovery_refs.dart';
 import 'package:freeplix/data/models/media_filter.dart';
 import 'package:freeplix/data/models/media_type.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
@@ -143,6 +144,7 @@ class _Header extends StatelessWidget {
           ],
         ),
         const SizedBox(height: Insets.md),
+        _DiscoveryPresets(state: state),
         _ActiveFilters(state: state),
         _ResultCount(state: state),
         const SizedBox(height: Insets.xl),
@@ -322,6 +324,68 @@ class _LoadMore extends StatelessWidget {
               )
             : const Icon(Icons.expand_more_rounded, size: 20),
         label: Text(isLoading ? 'Loading' : 'Load more'),
+      ),
+    );
+  }
+}
+
+/// The filters worth discovering, one tap away.
+///
+/// Keyword and studio browsing is the most distinctive thing the catalogue
+/// can do, and it is buried in a sheet nobody opens on a first visit — so a
+/// handful of starting points sit on the page itself.
+class _DiscoveryPresets extends StatelessWidget {
+  const _DiscoveryPresets({required this.state});
+
+  final BrowseState state;
+
+  @override
+  Widget build(BuildContext context) {
+    // Once the reader has narrowed things themselves, get out of the way.
+    if (!state.filter.isEmpty) return const SizedBox.shrink();
+
+    final cubit = context.read<BrowseCubit>();
+
+    void applyPreset(DiscoveryPreset preset) {
+      // Fire-and-forget: the cubit reports progress through its state.
+      unawaited(
+        cubit.applyFilter(
+          state.filter.copyWith(
+            keywords: {if (preset.keyword != null) preset.keyword!},
+            companies: {if (preset.company != null) preset.company!},
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Insets.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Eyebrow('Try browsing by'),
+          const SizedBox(height: Insets.xs),
+          Wrap(
+            spacing: Insets.xs,
+            runSpacing: Insets.xs,
+            children: [
+              for (final preset in Presets.moods)
+                FilterChipTile(
+                  label: preset.label,
+                  icon: Icons.local_offer_outlined,
+                  selected: false,
+                  onTap: () => applyPreset(preset),
+                ),
+              for (final preset in Presets.studios)
+                FilterChipTile(
+                  label: preset.label,
+                  icon: Icons.apartment_rounded,
+                  selected: false,
+                  onTap: () => applyPreset(preset),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

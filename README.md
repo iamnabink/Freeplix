@@ -192,7 +192,7 @@ Repository secrets, under **Settings → Secrets and variables → Actions**:
 | --- | --- | --- |
 | `TMDB_API_READ_ACCESS_TOKEN` | yes | TMDB v4 read token |
 | `TMDB_API_KEY` | fallback | TMDB v3 key |
-| `FREEPLIX_SOURCES` | no | JSON array of playback sources |
+| `FREEPLIX_SOURCES` | yes | JSON array of playback sources |
 
 > The TMDB key is compiled into the published bundle and is readable by anyone
 > who opens devtools. A repository secret keeps it out of the source and the
