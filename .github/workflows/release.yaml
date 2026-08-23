@@ -1,0 +1,104 @@
+name: release
+
+# Tag a version (`git tag v1.0.0 && git push --tags`) to cut a release:
+# builds the web bundle, attaches it to a GitHub Release, and publishes the
+# same build to GitHub Pages.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v1.0.0)"
+        required: true
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.8
+          channel: stable
+          cache: true
+
+      - name: Resolve version
+        id: version
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "value=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify
+        run: |
+          flutter analyze
+          flutter test
+
+      - name: Build web
+        env:
+          TMDB_API_READ_ACCESS_TOKEN: ${{ secrets.TMDB_API_READ_ACCESS_TOKEN }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          FREEPLIX_SOURCES: ${{ secrets.FREEPLIX_SOURCES }}
+        run: |
+          flutter build web \
+            --release \
+            --base-href "/Freeplix/" \
+            --dart-define=TMDB_API_READ_ACCESS_TOKEN="$TMDB_API_READ_ACCESS_TOKEN" \
+            --dart-define=TMDB_API_KEY="$TMDB_API_KEY" \
+            --dart-define=FREEPLIX_SOURCES="$FREEPLIX_SOURCES"
+          cp build/web/index.html build/web/404.html
+          touch build/web/.nojekyll
+
+      - name: Package the bundle
+        run: |
+          cd build/web
+          zip -r "../../freeplix-web-${{ steps.version.outputs.value }}.zip" .
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+      - name: Publish the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.value }}
+          name: Freeplix ${{ steps.version.outputs.value }}
+          generate_release_notes: true
+          files: freeplix-web-${{ steps.version.outputs.value }}.zip
+          body: |
+            Freeplix ${{ steps.version.outputs.value }} — an open-source,
+            ad-free movie and TV catalogue built with Flutter.
+
+            **Live:** https://iamnabink.github.io/Freeplix/
+
+            The attached zip is the static web bundle. Serve it from any
+            static host; rewrite unknown paths to `index.html` so deep links
+            resolve. Metadata and artwork come from the TMDB API.
+
+            This product uses the TMDB API but is not endorsed or certified
+            by TMDB.
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Freeplix (web)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "toolArgs": ["--dart-define-from-file", ".env"]
+    },
+    {
+      "name": "Freeplix (web, profile)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "flutterMode": "profile",
+      "toolArgs": ["--dart-define-from-file", ".env"]
+    },
+    {
+      "name": "Launch Test",
+      "request": "launch",
+      "type": "dart",
+      "program": "${file}"
+    }
+  ]
+}

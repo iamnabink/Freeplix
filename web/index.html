@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Replaced by the --base-href passed to `flutter build web`.
+       GitHub Pages serves this project from /Freeplix/. -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="theme-color" content="#0A0B0D">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Freeplix is an open-source, ad-free movie and TV catalogue built with Flutter, powered by the TMDB API.">
+
+  <meta property="og:title" content="Freeplix">
+  <meta property="og:description" content="An open-source, ad-free movie and TV catalogue built with Flutter.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Freeplix">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Freeplix</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #0A0B0D;
+      overscroll-behavior: none;
+    }
+
+    /* The projection booth, before Flutter has painted a frame. */
+    #boot {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      background: #0A0B0D;
+      color: #F4F1EC;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      transition: opacity 320ms ease;
+      z-index: 10;
+    }
+
+    #boot.done { opacity: 0; pointer-events: none; }
+
+    #boot .mark {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    #boot .mark b { color: #FFC24B; font-weight: 800; }
+
+    /* A length of film running through the gate. */
+    #boot .gate {
+      width: 168px;
+      height: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #boot .gate::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 336px;
+      background-image: repeating-linear-gradient(
+        to right,
+        #232830 0 11px,
+        transparent 11px 24px
+      );
+      animation: run 900ms linear infinite;
+    }
+
+    @keyframes run { to { transform: translateX(-24px); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      #boot .gate::before { animation: none; }
+    }
+
+    #boot .note {
+      font-size: 11px;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: #5C6673;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="boot">
+    <div class="mark">FREE<b>P</b>LIX</div>
+    <div class="gate"></div>
+    <div class="note">Threading the reel</div>
+  </div>
+
+  <script>
+    // Flutter clears the boot screen once the first frame is on screen.
+    window.addEventListener('flutter-first-frame', function () {
+      var boot = document.getElementById('boot');
+      if (!boot) return;
+      boot.classList.add('done');
+      setTimeout(function () { boot.remove(); }, 360);
+    });
+  </script>
+  <script>
+    {{flutter_bootstrap_js}}
+  </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+name: freeplix
+description: Freeplix - an open-source, ad-free movie and TV discovery app built with Flutter.
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+  flutter: ^3.44.0
+
+dependencies:
+  bloc: ^9.2.1
+  cached_network_image: ^3.4.1
+  collection: ^1.19.1
+  dio: ^5.11.0
+  equatable: ^2.1.0
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  flutter_hooks: ^0.21.3+1
+  flutter_localizations:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  go_router: ^17.5.0
+  intl: ^0.20.2
+  shared_preferences: ^2.5.5
+  url_launcher: ^6.3.2
+  web: ^1.1.1
+
+dev_dependencies:
+  bloc_lint: ^0.4.1
+  bloc_test: ^10.0.0
+  bloc_tools: ^0.1.0-dev.24
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.5
+  very_good_analysis: ^10.3.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/fonts/
+  fonts:
+    - family: BricolageGrotesque
+      fonts:
+        - asset: assets/fonts/BricolageGrotesque-Variable.ttf
+    - family: InterTight
+      fonts:
+        - asset: assets/fonts/InterTight-Variable.ttf
+    - family: SpaceMono
+      fonts:
+        - asset: assets/fonts/SpaceMono-Regular.ttf
+        - asset: assets/fonts/SpaceMono-Bold.ttf
+          weight: 700
