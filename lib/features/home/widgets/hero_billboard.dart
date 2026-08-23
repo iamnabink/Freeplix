@@ -6,6 +6,7 @@ import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/net_image.dart';
 import 'package:freeplix/data/models/media_item.dart';
+import 'package:freeplix/shell/view/app_shell.dart';
 
 /// The projected image: one title, filling the screen, with the room's
 /// darkness closing in from the left so the type stays readable.
@@ -49,9 +50,75 @@ class HeroBillboard extends HookWidget {
       return timer.cancel;
     }, [reduced, reelCount, onAdvance]);
 
-    final height = isCompact
-        ? 500.0
-        : (MediaQuery.sizeOf(context).height * 0.66).clamp(430.0, 600.0);
+    // On a phone the copy runs to a three-line title, a synopsis and four
+    // buttons that wrap to two rows. Pinning that inside a fixed height
+    // overflowed, so the artwork takes a band and the copy sets the height.
+    if (isCompact) {
+      return Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 430,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                AnimatedSwitcher(
+                  duration: Motion.slow,
+                  child: NetImage(
+                    key: ValueKey(item.id),
+                    url: item.backdrop(),
+                  ),
+                ),
+                const DecoratedBox(
+                  decoration: BoxDecoration(gradient: AppColors.backdropFade),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: ShellChrome.of(context) + 210),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Insets.lg,
+                  0,
+                  Insets.lg,
+                  Insets.lg,
+                ),
+                child: _Copy(
+                  item: item,
+                  isCompact: true,
+                  reelNumber: reelNumber,
+                  reelCount: reelCount,
+                  onWatch: onWatch,
+                  onTrailer: onTrailer,
+                  onDetails: onDetails,
+                  isSaved: isSaved,
+                  onToggleSave: onToggleSave,
+                ),
+              ),
+              if (reelCount > 1)
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: Insets.lg,
+                    bottom: Insets.md,
+                  ),
+                  child: _ReelTicks(
+                    index: reelNumber - 1,
+                    count: reelCount,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    final height =
+        (MediaQuery.sizeOf(context).height * 0.66).clamp(430.0, 600.0);
 
     return SizedBox(
       height: height,

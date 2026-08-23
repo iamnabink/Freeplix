@@ -1,12 +1,33 @@
+<div align="center">
+
 # Freeplix
 
-An open source movie and TV **catalogue**, built with Flutter and
-powered by the [TMDB API](https://www.themoviedb.org/). One codebase, web
-first; iOS and Android are wired up but not yet the focus.
+**One Flutter codebase. Web, iOS and Android.**
 
-**Live:** https://iamnabink.github.io/Freeplix/
+A complete streaming-catalogue interface — browse, filter, search, and track
+what you're watching — built to show how far Flutter goes on the web without
+giving up the phone.
 
-An open source project built for learning. No accounts, no backend, no tracking.
+[![Live demo](https://img.shields.io/badge/demo-iamnabink.github.io%2FFreeplix-FFC24B?style=flat-square)](https://iamnabink.github.io/Freeplix/)
+[![Flutter](https://img.shields.io/badge/Flutter-3.44.8-02569B?style=flat-square&logo=flutter)](https://flutter.dev)
+[![Platforms](https://img.shields.io/badge/platforms-web%20%7C%20iOS%20%7C%20Android-97A3B2?style=flat-square)](#)
+[![Licence](https://img.shields.io/badge/licence-MIT-4ADE80?style=flat-square)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/iamnabink/Freeplix?style=flat-square&color=FFC24B)](https://github.com/iamnabink/Freeplix/stargazers)
+
+### [→ Try it live](https://iamnabink.github.io/Freeplix/)
+
+</div>
+
+---
+
+Freeplix is a real interface, not a widget gallery: a spotlight reel, filterable
+catalogues of films and series, multi-search, season-by-season episode
+listings, a local watchlist, and a player shell — all from one Dart codebase,
+with no backend and no accounts.
+
+It exists to be read. Every file is hand-written, nothing is code-generated,
+and the architecture is deliberately plain: BLoC over repositories over the
+TMDB API.
 
 ## Screenshots
 

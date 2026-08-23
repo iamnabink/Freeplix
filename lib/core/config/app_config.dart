@@ -32,6 +32,7 @@ abstract final class AppConfig {
       'This product uses the TMDB API but is not endorsed or certified by TMDB.';
 
   static const purposeNotice =
-      'Freeplix is an open source project built purely for learning and '
-      'education — a worked example of Flutter, BLoC and a public API.';
+      'Freeplix is an open source project built to show what Flutter can do '
+      'from a single codebase — the same app on web, iOS and Android. '
+      'Free to read, learn from and build on.';
 }
