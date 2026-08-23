@@ -8,6 +8,14 @@ first; iOS and Android are wired up but not yet the focus.
 
 An open source project built for learning. No accounts, no backend, no tracking.
 
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Freeplix](ss/web.png) | ![Freeplix](ss/web2.png) |
+| ![Freeplix](ss/web3.png) | ![Freeplix](ss/web4.png) |
+
+
 ---
 
 ## What it does
@@ -200,13 +208,44 @@ Freeplix releases to the web only. The iOS and Android projects exist and
 compile, but nothing ships them — `release.yaml` builds `flutter build web`
 and nothing else.
 
+### Features
+
 - **Person pages** — tap a cast member for their filmography
-- **Search upgrades** — recent searches, keyboard navigation through results
-- **Mobile releases** — iOS (Swift Package Manager is already enabled) and
-  Android, once there is somewhere to ship them
+- **Where to watch** — TMDB exposes `/watch/providers`, which reports the
+  licensed services carrying a title in a given region. A "available on…"
+  row would be the catalogue's natural completion
+- **Search upgrades** — recent searches, and keyboard navigation through
+  results so the whole app is reachable without a pointer
 - **More locales** — `l10n` is wired, only English and Spanish are filled in
-- **A TMDB proxy** — the only way to stop the API key shipping in the client
-  bundle, at the cost of no longer being purely static
+
+### Platform
+
+- **Mobile releases** — iOS (Swift Package Manager is already enabled) and
+  Android. `release.yaml` builds web only, so mobile has no delivery path yet
+- **In-app playback on mobile** — the player is web-only; other platforms hand
+  off to the system browser. `flutter_inappwebview` would keep playback inline
+  *and* allow intercepting navigation, which a bare frame cannot do. Worth
+  doing only once mobile actually ships
+
+### Infrastructure
+
+- **A TMDB proxy** — the only way to stop the API key shipping inside the
+  client bundle. A Cloudflare Worker holding the key, with Freeplix pointed at
+  it instead of `api.themoviedb.org`, is roughly twenty lines. The cost is no
+  longer being purely static
+- **Cache headers** — GitHub Pages pins `max-age=600` and cannot be
+  configured. Cloudflare in front of Pages would allow proper cache control,
+  and pairs naturally with the proxy above
+- **Response caching** — a `dio` cache interceptor would spare TMDB repeat
+  requests for the same rails on every visit
+
+### Testing
+
+- **Golden and widget tests for layout** — the bugs that reached the browser
+  were all layout, not logic: a fixed-height banner that overflowed on a
+  phone, a header that collided with page headings, hidden controls that still
+  occupied width. Unit tests could not have caught any of them; golden tests
+  at two or three widths would have
 
 ## Licence and attribution
 
