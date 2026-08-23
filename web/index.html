@@ -114,7 +114,27 @@
     });
   </script>
   <script>
-    {{flutter_bootstrap_js}}
+    // Freeplix talks to TMDB on every screen, so a service worker buys no
+    // offline capability — it only makes the first load after a deploy serve
+    // the previous build from cache. Any worker installed by an earlier
+    // version is removed here so returning visitors are not stuck on it.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        regs.forEach(function (reg) { reg.unregister(); });
+      }).catch(function () {});
+      if (window.caches && caches.keys) {
+        caches.keys().then(function (keys) {
+          keys.forEach(function (k) { caches.delete(k); });
+        }).catch(function () {});
+      }
+    }
+  </script>
+
+  <script>
+    {{flutter_js}}
+    {{flutter_build_config}}
+    // load() without serviceWorkerSettings: no worker is registered.
+    _flutter.loader.load();
   </script>
 </body>
 </html>
