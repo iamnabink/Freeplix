@@ -59,8 +59,8 @@ to keep in sync.
 
 - **Home** — a spotlight reel of what's trending, then carousels for what's in
   theatres, what's on the air, and what's coming.
-- **Browse** — the full TMDB catalogue for films and series, filtered by genre
-  and sorted by popularity, rating, or release date, with infinite scroll.
+- **Browse** — the full TMDB catalogue for films and series, a page at a time
+  behind a **Load more** button.
 - **Search** — one debounced multi-search across films and series.
 - **Details** — synopsis, cast, crew, certification, runtime, genres,
   season-by-season episode listings, and recommendations.
@@ -68,22 +68,18 @@ to keep in sync.
 - **Jump back in** — the home page offers back whatever you last opened in the
   player, down to the episode for a series. The player runs cross-origin so
   its position cannot be read; this records what was opened, not a percentage.
-- **Filters** — genre, original language, country of origin, minimum rating,
-  decade and sort, with industry shorthands (Bollywood, Tollywood, K-drama,
-  Anime) that stand for a language and country pair. Results load a page at a
-  time behind a **Load more** button rather than on scroll.
+- **Filters** — the interesting ones. Browse by **keyword** ("heist", "time
+  travel"), by **studio** (Ghibli, A24, Pixar), by **cast**, by what's
+  **streaming** in your region, by runtime, language, country, decade or
+  rating. Industry shorthands (Bollywood, Tollywood, K-drama, Anime) stand for
+  a language and country pair, and one-tap presets sit on the page so the good
+  filters aren't buried in a sheet.
 
-  TMDB has no notion of dubs — it records a title's *original* language, and
-  `with_spoken_language` is silently ignored by its API — so there is no
-  honest "dubbed" filter to offer.
+  No "dubbed" filter: TMDB records a title's *original* language and silently
+  ignores `with_spoken_language`, so there is no honest way to offer one.
 - **Watch** — a 16:9 player stage fed by a playback source you configure
-  yourself (see below). Theater by default with a wide toggle; fullscreen
-  belongs to the embedded player's own controls.
-
-  In-app playback is **web only**. On iOS and Android the watch screen hands
-  off to the system browser instead of embedding a frame the app cannot
-  sandbox. Bringing playback inline on mobile is a good first contribution —
-  see [Future work](#platform).
+  yourself (see [Playback sources](#playback-sources)). Theater by default,
+  with a wide toggle. Web only; mobile hands off to the system browser.
 - **Trailer** — its own button and its own URL
   (`/watch/movie/603?trailer=1`). Watching the feature and watching the
   trailer are separate intents: asking for one never silently gives you the
@@ -92,6 +88,26 @@ to keep in sync.
 
 Every screen has an address: `/title/movie/603`, `/series?genre=18`,
 `/search?q=dune`. Paste a link and it opens where you left it.
+
+## Worth reading in here
+
+If you landed here to see how something is done, these are the files that
+answer a real question rather than restating a tutorial.
+
+| Question | Where |
+| --- | --- |
+| How do you embed a third-party player in Flutter web? | [`web_embed_web.dart`](lib/core/widgets/embed/web_embed_web.dart) — `dart:ui_web` platform views, with a stub sibling so the app still compiles for mobile |
+| How do you keep URLs real on Flutter web? | [`url_strategy.dart`](lib/core/router/url_strategy.dart) — path URLs behind a conditional import, plus the `404.html` trick Pages needs |
+| How do you keep one layout honest across widths? | [`app_shell.dart`](lib/shell/view/app_shell.dart) — the shell measures its own header and publishes it, so pages clear it instead of guessing |
+| How do you build a filter that maps cleanly to an API? | [`media_filter.dart`](lib/data/models/media_filter.dart) — one immutable value object, one `toQuery`, fully unit tested |
+| How do you keep a search box from hammering an API? | [`search_cubit.dart`](lib/features/search/bloc/search_cubit.dart) — debounce plus a request id, so a slow early response cannot overwrite a newer one |
+| How do you draw something that is not a rectangle? | [`sprocket_rail.dart`](lib/core/widgets/sprocket_rail.dart) — the film perforations every carousel runs between |
+
+A few decisions are deliberately *not* the obvious ones, and the comments say
+why: watching and watching-a-trailer are separate intents rather than a
+fallback, the carousel arrows are built only where a pointer exists, and the
+service worker is switched off because a catalogue that always needs the
+network gains nothing from it but a stale first paint.
 
 ## Playback sources
 
@@ -154,10 +170,38 @@ fvm flutter build web --release \
   --dart-define-from-file=.env
 ```
 
+## Built with
+
+| | |
+| --- | --- |
+| **Flutter 3.44.8** | pinned with [FVM](https://fvm.app/) |
+| **flutter_bloc** | state, one bloc or cubit per feature |
+| **flutter_hooks** | views, without a `StatefulWidget` in sight |
+| **go_router** | every screen has a real URL |
+| **dio** | networking, with typed failures the UI can act on |
+| **TMDB API** | the whole catalogue |
+| **Very Good CLI** | scaffold and lints |
+
+No code generation. No `build_runner`. Every file here was written by hand and
+is meant to be read.
+
 ## Architecture
 
 MVP with BLoC — a thin view layer over cubits and blocs, over repositories,
 over the API.
+
+```mermaid
+flowchart LR
+    V["View<br/><i>flutter_hooks</i>"] -- intent --> B["Bloc / Cubit<br/><i>state</i>"]
+    B -- state --> V
+    B --> R["Repository<br/><i>caching, shaping</i>"]
+    R --> C["TmdbClient<br/><i>dio</i>"]
+    C --> T["TMDB API"]
+    R --> L["SharedPreferences<br/><i>list, progress</i>"]
+```
+
+Views hold no logic and no data; they read state and emit intent. Repositories
+own caching and turn payloads into models. Nothing is code-generated.
 
 ```
 lib/
@@ -297,6 +341,37 @@ and nothing else.
   phone, a header that collided with page headings, hidden controls that still
   occupied width. Unit tests could not have caught any of them; golden tests
   at two or three widths would have
+
+## Contributing
+
+PRs welcome, and the issues below are genuinely open rather than decoration.
+
+**Good first contributions**
+
+- **Inline playback on mobile** — the watch screen currently hands off to the
+  system browser. `flutter_inappwebview` would keep it inline *and* allow
+  intercepting navigation, which a bare frame cannot. See
+  [`watch_page.dart`](lib/features/watch/view/watch_page.dart)
+- **Person pages** — the cast filter already resolves people; tapping a cast
+  member could open their filmography using the same `with_cast` machinery
+- **Golden tests** — every bug that reached the browser here was a layout bug
+  at a width nobody checked. Goldens at three widths would have caught them
+  all, and unit tests structurally cannot
+- **Locales** — `l10n` is wired and only English and Spanish are filled in
+
+**Ground rules**
+
+`flutter analyze` runs clean under `very_good_analysis` and `bloc_lint`, and
+the tests pass, before anything merges:
+
+```bash
+fvm flutter analyze && fvm flutter test
+```
+
+Views stay logic-free, repositories own caching, and nothing is
+code-generated. If a decision is not the obvious one, leave a comment saying
+why — there are several of those already, and they are the most useful lines
+in the codebase.
 
 ## Licence and attribution
 
