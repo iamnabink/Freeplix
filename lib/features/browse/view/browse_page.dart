@@ -12,6 +12,7 @@ import 'package:freeplix/data/models/genre.dart';
 import 'package:freeplix/data/models/media_type.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/browse/bloc/browse_cubit.dart';
+import 'package:freeplix/shell/view/app_footer.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
@@ -115,6 +116,7 @@ class BrowseView extends HookWidget {
                     : null,
               ),
             ),
+            const SliverAppFooter(),
           ],
         );
       },

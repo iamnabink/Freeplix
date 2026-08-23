@@ -24,6 +24,9 @@ abstract final class AppConfig {
       tmdbReadToken.isNotEmpty || tmdbApiKey.isNotEmpty;
 
   static const repositoryUrl = 'https://github.com/iamnabink/Freeplix';
+  static const authorUrl = 'https://github.com/iamnabink';
+  static const authorName = 'Nabraj Khadka';
+  static const authorHandle = 'iamnabink';
   static const tmdbAttribution =
       'This product uses the TMDB API but is not endorsed or certified by TMDB.';
 }

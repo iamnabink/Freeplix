@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Attach to Flutter" type="FlutterAttachConfigurationType" factoryName="Flutter Attach">
+    <method v="2" />
+  </configuration>
+</component>

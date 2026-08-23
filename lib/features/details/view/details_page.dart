@@ -15,6 +15,7 @@ import 'package:freeplix/features/details/bloc/details_cubit.dart';
 import 'package:freeplix/features/details/widgets/cast_rail.dart';
 import 'package:freeplix/features/details/widgets/episode_list.dart';
 import 'package:freeplix/features/watchlist/bloc/watchlist_cubit.dart';
+import 'package:freeplix/shell/view/app_footer.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
@@ -88,11 +89,11 @@ class DetailsView extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: Insets.xxxl),
                   ],
                 ),
               ),
             ),
+            const SliverAppFooter(),
           ],
         );
       },

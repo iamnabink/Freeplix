@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="All Tests" type="FlutterTestConfigType" factoryName="Flutter Test">
+    <option name="filePath" value="$PROJECT_DIR$/test" />
+    <option name="scope" value="FOLDER" />
+    <option name="additionalArgs" value="--dart-define-from-file .env" />
+    <method v="2" />
+  </configuration>
+</component>

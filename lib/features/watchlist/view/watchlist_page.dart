@@ -6,6 +6,7 @@ import 'package:freeplix/core/widgets/media_grid.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/state_views.dart';
 import 'package:freeplix/features/watchlist/bloc/watchlist_cubit.dart';
+import 'package:freeplix/shell/view/app_footer.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
@@ -82,7 +83,7 @@ class WatchlistPage extends StatelessWidget {
                       context.go('/title/${item.type.wire}/${item.id}'),
                 ),
               ),
-            const SliverToBoxAdapter(child: SizedBox(height: Insets.xxxl)),
+            const SliverAppFooter(),
           ],
         );
       },

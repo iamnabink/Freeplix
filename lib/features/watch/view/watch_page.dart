@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freeplix/core/config/app_config.dart';
@@ -230,11 +231,14 @@ class _NoPlayback extends StatelessWidget {
         compact: true,
         icon: Icons.settings_input_antenna_rounded,
         eyebrow: 'No playback source',
-        message:
-            'This build has no playback source configured, so there is no '
-            'feature to play. Add FREEPLIX_SOURCES to .env (or to the '
-            'repository secret of the same name for a deploy) to point '
-            'Freeplix at a library you can stream.',
+        message: kReleaseMode
+            ? 'Freeplix is a catalogue — this deployment has no playback '
+                  'source, so there is no feature to stream here. The '
+                  'official trailer is available.'
+            : 'This build has no playback source configured. Add '
+                  'FREEPLIX_SOURCES to .env (or the repository secret of '
+                  'the same name for a deploy) to point Freeplix at a '
+                  'library you can stream.',
         action: state.hasTrailer
             ? OutlinedButton.icon(
                 onPressed: context.read<WatchCubit>().selectTrailer,
