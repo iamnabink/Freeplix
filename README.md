@@ -20,6 +20,17 @@ An open source project built for learning. No accounts, no backend, no tracking.
 - **Details** — synopsis, cast, crew, certification, runtime, genres,
   season-by-season episode listings, and recommendations.
 - **My list** — saved titles, kept in your browser's local storage.
+- **Jump back in** — the home page offers back whatever you last opened in the
+  player, down to the episode for a series. The player runs cross-origin so
+  its position cannot be read; this records what was opened, not a percentage.
+- **Filters** — genre, original language, country of origin, minimum rating,
+  decade and sort, with industry shorthands (Bollywood, Tollywood, K-drama,
+  Anime) that stand for a language and country pair. Results load a page at a
+  time behind a **Load more** button rather than on scroll.
+
+  TMDB has no notion of dubs — it records a title's *original* language, and
+  `with_spoken_language` is silently ignored by its API — so there is no
+  honest "dubbed" filter to offer.
 - **Watch** — a 16:9 player stage fed by a playback source you configure
   yourself (see below).
 - **Trailer** — its own button and its own URL
@@ -183,13 +194,19 @@ fvm flutter test
 Models, blocs, cubits and the source registry are covered. `flutter analyze`
 runs clean under `very_good_analysis` and `bloc_lint`.
 
-## Roadmap
+## Future work
 
-- iOS and Android builds (Swift Package Manager is already the iOS default in
-  3.44)
-- Continue-watching progress, kept locally
-- Person pages and filmographies
-- More locales — `l10n` is wired, only English and Spanish are filled in
+Freeplix releases to the web only. The iOS and Android projects exist and
+compile, but nothing ships them — `release.yaml` builds `flutter build web`
+and nothing else.
+
+- **Person pages** — tap a cast member for their filmography
+- **Search upgrades** — recent searches, keyboard navigation through results
+- **Mobile releases** — iOS (Swift Package Manager is already enabled) and
+  Android, once there is somewhere to ship them
+- **More locales** — `l10n` is wired, only English and Spanish are filled in
+- **A TMDB proxy** — the only way to stop the API key shipping in the client
+  bundle, at the cost of no longer being purely static
 
 ## Licence and attribution
 

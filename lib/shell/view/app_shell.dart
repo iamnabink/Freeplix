@@ -52,19 +52,17 @@ class AppShell extends HookWidget {
               child: MediaQuery.removePadding(
                 context: context,
                 removeTop: true,
-                child: Padding(
-                  padding: EdgeInsets.only(top: isCompact ? 0 : 0),
-                  child: child,
-                ),
+                child: child,
               ),
             ),
-            if (!isCompact)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: _TopRail(scrolled: scrolled.value, location: location),
-              ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: isCompact
+                  ? _CompactBar(scrolled: scrolled.value)
+                  : _TopRail(scrolled: scrolled.value, location: location),
+            ),
           ],
         ),
       ),
@@ -78,6 +76,55 @@ class AppShell extends HookWidget {
               child: const Icon(Icons.search_rounded),
             )
           : null,
+    );
+  }
+}
+
+/// Phones get the wordmark and search; navigation lives in the bottom bar.
+/// Transparent over a hero until the reader scrolls, like the wide rail.
+class _CompactBar extends StatelessWidget {
+  const _CompactBar({required this.scrolled});
+
+  final bool scrolled;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: Motion.base,
+      decoration: BoxDecoration(
+        color: scrolled
+            ? AppColors.ink.withValues(alpha: 0.94)
+            : Colors.transparent,
+        border: Border(
+          bottom: BorderSide(
+            color: scrolled ? AppColors.ash : Colors.transparent,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Insets.md,
+            vertical: Insets.xs,
+          ),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => context.go('/'),
+                child: const Wordmark(size: 19),
+              ),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Search Freeplix',
+                onPressed: () => context.go('/search'),
+                icon: const Icon(Icons.search_rounded, size: 22),
+                color: AppColors.screen,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

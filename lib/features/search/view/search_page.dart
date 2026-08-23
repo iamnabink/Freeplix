@@ -54,7 +54,7 @@ class SearchView extends HookWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  height: isCompact ? Insets.lg : Insets.xxxl + Insets.md,
+                  height: isCompact ? Insets.xxxl : Insets.xxxl + Insets.md,
                 ),
                 const Eyebrow('Search the catalogue'),
                 const SizedBox(height: Insets.xs),

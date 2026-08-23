@@ -122,7 +122,7 @@ class _Header extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: isCompact ? Insets.lg : Insets.xxxl + Insets.md),
+        SizedBox(height: isCompact ? Insets.xxxl : Insets.xxxl + Insets.md),
         const Eyebrow('Browse the catalogue'),
         const SizedBox(height: Insets.xs),
         Row(

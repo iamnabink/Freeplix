@@ -27,7 +27,7 @@ class WatchlistPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      height: isCompact ? Insets.lg : Insets.xxxl + Insets.md,
+                      height: isCompact ? Insets.xxxl : Insets.xxxl + Insets.md,
                     ),
                     const Eyebrow('Saved on this device'),
                     const SizedBox(height: Insets.xs),
