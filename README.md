@@ -31,13 +31,26 @@ TMDB API.
 
 ## Screenshots
 
+One codebase, rendered by the same widgets on every target.
+
+**Web**
+
 | | |
 | --- | --- |
-| ![Freeplix](ss/web.png) | ![Freeplix](ss/web2.png) |
-| ![Freeplix](ss/web3.png) | ![Freeplix](ss/web4.png) |
+| ![Freeplix on the web](ss/web.png) | ![Freeplix on the web](ss/web2.png) |
+| ![Freeplix on the web](ss/web3.png) | ![Freeplix on the web](ss/web4.png) |
 
+**Phone**
 
----
+The layout is responsive rather than a separate build: below 640px the top
+rail becomes a bottom bar, carousels drop their pointer-only scroll arrows,
+and the hero and detail banners let their content set the height instead of
+being pinned to a fixed one.
+
+<p align="left">
+  <img src="ss/phone1.png" width="270" alt="Freeplix on a phone" />
+  <img src="ss/phone2.png" width="270" alt="Freeplix on a phone" />
+</p>
 
 ## What it does
 
@@ -61,7 +74,13 @@ TMDB API.
   `with_spoken_language` is silently ignored by its API — so there is no
   honest "dubbed" filter to offer.
 - **Watch** — a 16:9 player stage fed by a playback source you configure
-  yourself (see below).
+  yourself (see below). Theater by default with a wide toggle; fullscreen
+  belongs to the embedded player's own controls.
+
+  In-app playback is **web only**. On iOS and Android the watch screen hands
+  off to the system browser instead of embedding a frame the app cannot
+  sandbox. Bringing playback inline on mobile is a good first contribution —
+  see [Future work](#platform).
 - **Trailer** — its own button and its own URL
   (`/watch/movie/603?trailer=1`). Watching the feature and watching the
   trailer are separate intents: asking for one never silently gives you the
@@ -220,8 +239,16 @@ Deep links return a 404 *status* while serving the app, which is what lets
 fvm flutter test
 ```
 
-Models, blocs, cubits and the source registry are covered. `flutter analyze`
-runs clean under `very_good_analysis` and `bloc_lint`.
+61 tests covering the models, blocs, cubits, the filter-to-TMDB query mapping
+and the playback source registry. `flutter analyze` runs clean under
+`very_good_analysis` and `bloc_lint`.
+
+There is deliberately no coverage badge. Releases are the only workflow, so
+nothing publishes a coverage figure on every push — a committed badge would
+be stale the moment it was generated. The number that would matter here is
+widget coverage, and it is honestly low: every bug that reached the browser
+was a layout bug, which is what [Future work](#testing) proposes fixing with
+golden tests rather than a percentage.
 
 ## Future work
 
