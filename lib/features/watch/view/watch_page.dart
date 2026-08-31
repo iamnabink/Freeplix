@@ -101,9 +101,13 @@ class WatchView extends HookWidget {
           final detail = state.detail;
           if (detail == null) return const LoadingView();
 
-          return _RecordProgress(
-            state: state,
-            child: _Body(state: state, wide: wide),
+          return Title(
+            title: '${detail.titleWithYear} · Freeplix',
+            color: AppColors.ink,
+            child: _RecordProgress(
+              state: state,
+              child: _Body(state: state, wide: wide),
+            ),
           );
         },
       ),
