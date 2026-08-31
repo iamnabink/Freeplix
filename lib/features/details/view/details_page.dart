@@ -62,40 +62,44 @@ class DetailsView extends StatelessWidget {
 
         if (detail == null) return const LoadingView();
 
-        return CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(child: _Banner(detail: detail)),
-            SliverToBoxAdapter(
-              child: PagePadding(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (detail.seasons.isNotEmpty) ...[
-                      const SizedBox(height: Insets.xxl),
-                      _Episodes(detail: detail, state: state),
-                    ],
-                    if (detail.cast.isNotEmpty) ...[
-                      const SizedBox(height: Insets.xxl),
-                      const _SectionTitle('Cast'),
-                      const SizedBox(height: Insets.md),
-                      CastRail(cast: detail.cast),
-                    ],
-                    if (detail.similar.isNotEmpty) ...[
-                      const SizedBox(height: Insets.xxl),
-                      MediaRow(
-                        title: 'More like this',
-                        items: detail.similar,
-                        onSelect: (item) => context.go(
-                          '/title/${item.type.wire}/${item.id}',
+        return Title(
+          title: '${detail.titleWithYear} · Freeplix',
+          color: AppColors.ink,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _Banner(detail: detail)),
+              SliverToBoxAdapter(
+                child: PagePadding(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (detail.seasons.isNotEmpty) ...[
+                        const SizedBox(height: Insets.xxl),
+                        _Episodes(detail: detail, state: state),
+                      ],
+                      if (detail.cast.isNotEmpty) ...[
+                        const SizedBox(height: Insets.xxl),
+                        const _SectionTitle('Cast'),
+                        const SizedBox(height: Insets.md),
+                        CastRail(cast: detail.cast),
+                      ],
+                      if (detail.similar.isNotEmpty) ...[
+                        const SizedBox(height: Insets.xxl),
+                        MediaRow(
+                          title: 'More like this',
+                          items: detail.similar,
+                          onSelect: (item) => context.go(
+                            '/title/${item.type.wire}/${item.id}',
+                          ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
-            const SliverAppFooter(),
-          ],
+              const SliverAppFooter(),
+            ],
+          ),
         );
       },
     );

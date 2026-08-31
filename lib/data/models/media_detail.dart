@@ -143,6 +143,10 @@ class MediaDetail extends Equatable {
 
   String get year => releaseDate?.year.toString() ?? '—';
 
+  /// `Inception (2010)`, or just the title when the year is unknown. Used for
+  /// the browser tab / OS task-switcher label.
+  String get titleWithYear => year == '—' ? title : '$title ($year)';
+
   String get rating => voteAverage <= 0 ? '—' : voteAverage.toStringAsFixed(1);
 
   /// `2h 46m`, or `48m` for a single-hour-or-less runtime.
