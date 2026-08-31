@@ -450,8 +450,9 @@ class _BelowStage extends StatelessWidget {
           const Eyebrow('Playing'),
           const SizedBox(height: Insets.xs),
           _PlaybackSwitcher(state: state),
-          const SizedBox(height: Insets.lg),
+          const SizedBox(height: Insets.sm),
         ],
+        if (state.sources.isNotEmpty) const _SourceAdsNotice(),
         if (state.hasNoSourceConfigured) const _TrailerNotice(),
         if (detail.type == MediaType.tv) ...[
           const SizedBox(height: Insets.lg),
@@ -552,6 +553,40 @@ class _PlaybackChip extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// A quiet reminder that any ads belong to the third-party player, not to
+/// Freeplix, which never serves them.
+class _SourceAdsNotice extends StatelessWidget {
+  const _SourceAdsNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Insets.xs),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            size: 14,
+            color: AppColors.screenDim,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              'Caution: Some sources may show ads or pop-ups. Those come from the '
+              'player itself, not from Freeplix.',
+              style: AppTypography.bodyStyle(
+                size: 12,
+                color: AppColors.screenDim,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
