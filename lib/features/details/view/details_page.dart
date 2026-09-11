@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:freeplix/core/share/share_link.dart';
 import 'package:freeplix/core/theme/app_colors.dart';
 import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
@@ -389,10 +390,30 @@ class _Actions extends StatelessWidget {
               ),
               label: Text(saved ? 'In my list' : 'My list'),
             ),
+            OutlinedButton.icon(
+              onPressed: () => _share(context, detail),
+              icon: const Icon(Icons.ios_share_rounded, size: 19),
+              label: const Text('Share'),
+            ),
           ],
         );
       },
     );
+  }
+
+  Future<void> _share(BuildContext context, MediaDetail detail) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final url = shareUrlFor('title/${detail.type.wire}/${detail.id}');
+    final result = await shareOrCopy(url: url, text: detail.titleWithYear);
+    if (result == ShareResult.copied) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Link copied to clipboard'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }
 

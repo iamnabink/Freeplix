@@ -139,13 +139,23 @@ class WatchCubit extends Cubit<WatchState> {
     int? season,
     int? episode,
     bool trailer = false,
+    String? preferredSourceId,
   }) : super(
          WatchState(
            season: season,
            episode: episode,
            requestedKind: trailer ? PlaybackKind.trailer : null,
+           sourceIndex: _indexForPreferred(preferredSourceId),
          ),
        );
+
+  /// Where in the configured sources the viewer's default sits, or 0 (the
+  /// first) when they have no preference or it is no longer configured.
+  static int _indexForPreferred(String? id) {
+    if (id == null) return 0;
+    final index = StreamSources.all.indexWhere((s) => s.id == id);
+    return index < 0 ? 0 : index;
+  }
 
   final TmdbRepository _repository;
   final MediaType type;
