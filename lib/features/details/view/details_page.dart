@@ -384,7 +384,10 @@ class _PersonLink extends StatelessWidget {
         child: MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
-            onTap: () => context.go('/movies?cast=${person.id}'),
+            onTap: () => context.go(
+              '/movies?cast=${person.id}'
+              '&name=${Uri.encodeQueryComponent(person.name)}',
+            ),
             child: Text(
               person.name,
               style: AppTypography.bodyStyle(

@@ -5,6 +5,7 @@ import 'package:freeplix/data/models/genre.dart';
 import 'package:freeplix/data/models/media_filter.dart';
 import 'package:freeplix/data/models/media_item.dart';
 import 'package:freeplix/data/models/media_type.dart';
+import 'package:freeplix/data/models/person_ref.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 
 enum BrowseStatus { initial, loading, ready, loadingMore, failure }
@@ -78,6 +79,7 @@ class BrowseCubit extends Cubit<BrowseState> {
     required this.type,
     MediaFilter initialFilter = const MediaFilter(),
     this.initialCastId,
+    this.initialCastName,
   }) : super(BrowseState(filter: initialFilter));
 
   final TmdbRepository _repository;
@@ -86,15 +88,30 @@ class BrowseCubit extends Cubit<BrowseState> {
   /// Arrived from a cast member being tapped: /movies?cast=6384
   final int? initialCastId;
 
+  /// The tapped person's name, when the link carried it — used to label the
+  /// filter chip immediately, without waiting on a lookup.
+  final String? initialCastName;
+
   Future<void> start() async {
     emit(state.copyWith(status: BrowseStatus.loading));
     try {
       final genres = await _repository.genres(type);
       emit(state.copyWith(genres: genres));
 
-      // Resolve the name so the chip reads "Keanu Reeves", not an id.
+      // Label the chip with the exact tapped name when the link carried it
+      // (a director, writer or cast member — whatever was tapped); otherwise
+      // resolve the id so the chip reads "Keanu Reeves", not a number.
       final castId = initialCastId;
-      if (castId != null) {
+      final castName = initialCastName;
+      if (castId != null && castName != null && castName.isNotEmpty) {
+        emit(
+          state.copyWith(
+            filter: state.filter.copyWith(
+              cast: {PersonRef(id: castId, name: castName)},
+            ),
+          ),
+        );
+      } else if (castId != null) {
         try {
           final who = await _repository.person(castId);
           emit(state.copyWith(filter: state.filter.copyWith(cast: {who})));
