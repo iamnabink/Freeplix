@@ -376,18 +376,22 @@ class _PersonLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: () => context.go('/movies?cast=${person.id}'),
-          child: Text(
-            person.name,
-            style: AppTypography.bodyStyle(
-              size: 13,
-              weight: 600,
-              color: AppColors.lamp,
+    // Carve the link out of the surrounding SelectableCopy so hovering shows
+    // the click cursor, not the text selection I-beam, and a tap fires cleanly.
+    return SelectionContainer.disabled(
+      child: Semantics(
+        button: true,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () => context.go('/movies?cast=${person.id}'),
+            child: Text(
+              person.name,
+              style: AppTypography.bodyStyle(
+                size: 13,
+                weight: 600,
+                color: AppColors.lamp,
+              ),
             ),
           ),
         ),
