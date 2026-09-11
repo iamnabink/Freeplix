@@ -360,6 +360,7 @@ class _DiscoveryPresets extends StatelessWidget {
           state.filter.copyWith(
             keywords: {if (preset.keyword != null) preset.keyword!},
             companies: {if (preset.company != null) preset.company!},
+            genreIds: {if (preset.genreId != null) preset.genreId!},
           ),
         ),
       );

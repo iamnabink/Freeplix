@@ -73,11 +73,16 @@ class DiscoveryPreset extends Equatable {
     required this.label,
     this.keyword,
     this.company,
+    this.genreId,
   });
 
   final String label;
   final KeywordRef? keyword;
   final CompanyRef? company;
+
+  /// A TMDB genre id, for presets that are a genre rather than a narrow
+  /// keyword (a keyword like "date night" tags too few titles to be useful).
+  final int? genreId;
 
   @override
   List<Object?> get props => [label];
@@ -113,10 +118,7 @@ abstract final class Presets {
       label: 'Coming of age',
       keyword: KeywordRef(id: 10683, name: 'coming of age'),
     ),
-    DiscoveryPreset(
-      label: 'Date night',
-      keyword: KeywordRef(id: 254464, name: 'date night'),
-    ),
+    DiscoveryPreset(label: 'Date night', genreId: 10749),
     DiscoveryPreset(
       label: 'Erotic thrillers',
       keyword: KeywordRef(id: 207767, name: 'erotic thriller'),
