@@ -7,6 +7,7 @@ import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/wordmark.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/search/view/search_overlay.dart';
+import 'package:freeplix/features/settings/bloc/settings_cubit.dart';
 import 'package:freeplix/features/settings/view/settings_sheet.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
@@ -248,9 +249,10 @@ class _SurpriseButton extends HookWidget {
       final router = GoRouter.of(context);
       final messenger = ScaffoldMessenger.of(context);
       final repository = context.read<TmdbRepository>();
+      final genreIds = context.read<SettingsCubit>().state.genreIds;
       loading.value = true;
       try {
-        final pick = await repository.surprise();
+        final pick = await repository.surprise(genreIds: genreIds);
         if (pick != null) {
           router.go('/title/${pick.type.wire}/${pick.id}');
         } else {

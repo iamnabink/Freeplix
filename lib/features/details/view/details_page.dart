@@ -11,6 +11,7 @@ import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/net_image.dart';
 import 'package:freeplix/core/widgets/selectable_copy.dart';
 import 'package:freeplix/core/widgets/state_views.dart';
+import 'package:freeplix/data/models/credits.dart';
 import 'package:freeplix/data/models/media_detail.dart';
 import 'package:freeplix/data/models/media_type.dart';
 import 'package:freeplix/data/models/title_collection.dart';
@@ -335,18 +336,21 @@ class _Credits extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget line(String label, List<String> names) => Padding(
+    Widget line(String label, List<CrewMember> people) => Padding(
       padding: const EdgeInsets.only(bottom: 3),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(width: 96, child: Eyebrow(label)),
           Expanded(
-            child: Text(
-              names.join(', '),
-              style: AppTypography.bodyStyle(
-                size: 13,
-              ),
+            child: Wrap(
+              children: [
+                for (var i = 0; i < people.length; i++) ...[
+                  _PersonLink(person: people[i]),
+                  if (i < people.length - 1)
+                    Text(', ', style: AppTypography.bodyStyle(size: 13)),
+                ],
+              ],
             ),
           ),
         ],
@@ -356,9 +360,38 @@ class _Credits extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (detail.directors.isNotEmpty) line('Director', detail.directors),
-        if (detail.writers.isNotEmpty) line('Writer', detail.writers),
+        if (detail.directorCrew.isNotEmpty)
+          line('Director', detail.directorCrew),
+        if (detail.writerCrew.isNotEmpty) line('Writer', detail.writerCrew),
       ],
+    );
+  }
+}
+
+/// A crew member's name, linking to a browse of everything they made.
+class _PersonLink extends StatelessWidget {
+  const _PersonLink({required this.person});
+
+  final CrewMember person;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () => context.go('/movies?cast=${person.id}'),
+          child: Text(
+            person.name,
+            style: AppTypography.bodyStyle(
+              size: 13,
+              weight: 600,
+              color: AppColors.lamp,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

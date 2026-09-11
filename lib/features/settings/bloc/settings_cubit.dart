@@ -11,6 +11,7 @@ class SettingsState extends Equatable {
     this.name = '',
     this.accent = kDefaultAccent,
     this.defaultSourceId,
+    this.genreIds = const <int>[],
   });
 
   /// The viewer's display name. Empty until they set one.
@@ -22,6 +23,9 @@ class SettingsState extends Equatable {
   /// Preferred playback source id, or null for "no preference" (Freeplix then
   /// starts on the first configured source).
   final String? defaultSourceId;
+
+  /// Favourite TMDB genre ids, used to bias the "Surprise me" pick.
+  final List<int> genreIds;
 
   /// One or two uppercase letters drawn from the name, for the avatar. Empty
   /// when there is no name yet, so the avatar can show a placeholder instead.
@@ -43,6 +47,7 @@ class SettingsState extends Equatable {
     String? name,
     int? accent,
     String? Function()? defaultSourceId,
+    List<int>? genreIds,
   }) {
     return SettingsState(
       name: name ?? this.name,
@@ -50,11 +55,12 @@ class SettingsState extends Equatable {
       defaultSourceId: defaultSourceId == null
           ? this.defaultSourceId
           : defaultSourceId(),
+      genreIds: genreIds ?? this.genreIds,
     );
   }
 
   @override
-  List<Object?> get props => [name, accent, defaultSourceId];
+  List<Object?> get props => [name, accent, defaultSourceId, genreIds];
 }
 
 /// Holds the viewer's local profile and preferences, writing each change
@@ -67,6 +73,7 @@ class SettingsCubit extends Cubit<SettingsState> {
           name: repository.loadName(),
           accent: repository.loadAccent() ?? kDefaultAccent,
           defaultSourceId: repository.loadDefaultSource(),
+          genreIds: repository.loadGenres(),
         ),
       );
 
@@ -86,5 +93,12 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> setDefaultSource(String? id) async {
     emit(state.copyWith(defaultSourceId: () => id));
     await _repository.saveDefaultSource(id);
+  }
+
+  Future<void> toggleGenre(int id) async {
+    final next = [...state.genreIds];
+    if (!next.remove(id)) next.add(id);
+    emit(state.copyWith(genreIds: next));
+    await _repository.saveGenres(next);
   }
 }

@@ -195,6 +195,20 @@ class MediaDetail extends Equatable {
       .take(3)
       .toList();
 
+  /// Directors as full crew records (with person ids), so their names can
+  /// link to a browse of everything they made. Deduped by person.
+  List<CrewMember> get directorCrew =>
+      _uniqueCrew(const {'Director', 'Series Director'});
+
+  /// Writers as full crew records, capped so the credits line stays short.
+  List<CrewMember> get writerCrew =>
+      _uniqueCrew(const {'Writer', 'Screenplay'}).take(3).toList();
+
+  List<CrewMember> _uniqueCrew(Set<String> jobs) {
+    final seen = <int>{};
+    return crew.where((c) => jobs.contains(c.job) && seen.add(c.id)).toList();
+  }
+
   Video? get trailer {
     final ranked = [...videos]
       ..sort((a, b) {

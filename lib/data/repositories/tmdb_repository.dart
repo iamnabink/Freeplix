@@ -49,9 +49,28 @@ class TmdbRepository {
 
   final _random = Random();
 
-  /// A random title worth watching — pulled from a random page of what's
-  /// trending, for the "Surprise me" pick. Null only if TMDB returns nothing.
-  Future<MediaItem?> surprise() async {
+  /// A random title worth watching, for the "Surprise me" pick. When the
+  /// viewer has favourite [genreIds], it discovers a random popular film in
+  /// one of them; otherwise it pulls from what's trending. Null only if TMDB
+  /// returns nothing at all.
+  Future<MediaItem?> surprise({List<int> genreIds = const []}) async {
+    if (genreIds.isNotEmpty) {
+      final genre = genreIds[_random.nextInt(genreIds.length)];
+      final result = await _page(
+        '/discover/movie',
+        page: 1 + _random.nextInt(5),
+        fallbackType: MediaType.movie,
+        query: {
+          'with_genres': '$genre',
+          'sort_by': 'popularity.desc',
+          'vote_count.gte': 100,
+        },
+      );
+      final pool = result.items.where((e) => e.posterPath != null).toList();
+      if (pool.isNotEmpty) return pool[_random.nextInt(pool.length)];
+      // Fall through to trending if the genre came back empty.
+    }
+
     final result = await trending(page: 1 + _random.nextInt(5));
     final pool = result.items.where((e) => e.posterPath != null).toList();
     if (pool.isEmpty) return null;
