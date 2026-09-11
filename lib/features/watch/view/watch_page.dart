@@ -11,6 +11,7 @@ import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/embed/web_embed.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
+import 'package:freeplix/core/widgets/selectable_copy.dart';
 import 'package:freeplix/core/widgets/state_views.dart';
 import 'package:freeplix/core/widgets/wordmark.dart';
 import 'package:freeplix/data/models/media_type.dart';
@@ -218,34 +219,36 @@ class _PlayerBar extends StatelessWidget {
               ),
               const SizedBox(width: Insets.xs),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      detail.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.bodyStyle(
-                        size: 15,
-                        weight: 600,
-                        color: AppColors.emulsion,
+                child: SelectableCopy(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        detail.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.bodyStyle(
+                          size: 15,
+                          weight: 600,
+                          color: AppColors.emulsion,
+                        ),
                       ),
-                    ),
-                    MetaBar(
-                      size: 10,
-                      entries: [
-                        if (state.episodeLabel != null) state.episodeLabel!,
-                        detail.year,
-                        switch (state.kind) {
-                          PlaybackKind.source =>
-                            state.activeSource?.name ?? 'Source',
-                          PlaybackKind.trailer => 'YouTube · Trailer',
-                          PlaybackKind.nothing => 'Nothing to play',
-                        },
-                      ],
-                    ),
-                  ],
+                      MetaBar(
+                        size: 10,
+                        entries: [
+                          if (state.episodeLabel != null) state.episodeLabel!,
+                          detail.year,
+                          switch (state.kind) {
+                            PlaybackKind.source =>
+                              state.activeSource?.name ?? 'Source',
+                            PlaybackKind.trailer => 'YouTube · Trailer',
+                            PlaybackKind.nothing => 'Nothing to play',
+                          },
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: Insets.md),
@@ -653,12 +656,14 @@ class _SourceAdsNotice extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Expanded(
-            child: Text(
-              'Caution: Some sources may show ads or pop-ups. Those come from the '
-              'player itself, not from Freeplix.',
-              style: AppTypography.bodyStyle(
-                size: 12,
-                color: AppColors.screenDim,
+            child: SelectableCopy(
+              child: Text(
+                'Caution: Some sources may show ads or pop-ups. Those come from '
+                'the player itself, not from Freeplix.',
+                style: AppTypography.bodyStyle(
+                  size: 12,
+                  color: AppColors.screenDim,
+                ),
               ),
             ),
           ),
@@ -691,34 +696,40 @@ class _TrailerNotice extends StatelessWidget {
           ),
           const SizedBox(width: Insets.sm),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Playing the official trailer',
-                  style: AppTypography.bodyStyle(
-                    size: 14,
-                    weight: 600,
-                    color: AppColors.emulsion,
+            child: SelectableCopy(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Playing the official trailer',
+                    style: AppTypography.bodyStyle(
+                      size: 14,
+                      weight: 600,
+                      color: AppColors.emulsion,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  'Freeplix ships with no playback source. It reads its '
-                  'catalogue from TMDB and plays the trailers TMDB '
-                  'publishes. To point this build at a library you are '
-                  'licensed to stream, set FREEPLIX_SOURCES at build time.',
-                  style: AppTypography.bodyStyle(size: 13.5),
-                ),
-                const SizedBox(height: Insets.xs),
-                TextButton(
-                  onPressed: () => launchUrl(
-                    Uri.parse('${AppConfig.repositoryUrl}#playback-sources'),
-                    mode: LaunchMode.externalApplication,
+                  const SizedBox(height: 3),
+                  Text(
+                    'Freeplix ships with no playback source. It reads its '
+                    'catalogue from TMDB and plays the trailers TMDB '
+                    'publishes. To point this build at a library you are '
+                    'licensed to stream, set FREEPLIX_SOURCES at build time.',
+                    style: AppTypography.bodyStyle(size: 13.5),
                   ),
-                  child: const Text('How to configure a source'),
-                ),
-              ],
+                  const SizedBox(height: Insets.xs),
+                  SelectionContainer.disabled(
+                    child: TextButton(
+                      onPressed: () => launchUrl(
+                        Uri.parse(
+                          '${AppConfig.repositoryUrl}#playback-sources',
+                        ),
+                        mode: LaunchMode.externalApplication,
+                      ),
+                      child: const Text('How to configure a source'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:freeplix/core/share/share_link.dart';
 import 'package:freeplix/core/theme/app_colors.dart';
 import 'package:freeplix/core/theme/app_spacing.dart';
@@ -8,13 +9,16 @@ import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/media_row.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/net_image.dart';
+import 'package:freeplix/core/widgets/selectable_copy.dart';
 import 'package:freeplix/core/widgets/state_views.dart';
 import 'package:freeplix/data/models/media_detail.dart';
 import 'package:freeplix/data/models/media_type.dart';
+import 'package:freeplix/data/models/title_collection.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/details/bloc/details_cubit.dart';
 import 'package:freeplix/features/details/widgets/cast_rail.dart';
 import 'package:freeplix/features/details/widgets/episode_list.dart';
+import 'package:freeplix/features/watchlist/bloc/watched_cubit.dart';
 import 'package:freeplix/features/watchlist/bloc/watchlist_cubit.dart';
 import 'package:freeplix/shell/view/app_footer.dart';
 import 'package:freeplix/shell/view/app_shell.dart';
@@ -83,6 +87,10 @@ class DetailsView extends StatelessWidget {
                         const _SectionTitle('Cast'),
                         const SizedBox(height: Insets.md),
                         CastRail(cast: detail.cast),
+                      ],
+                      if (detail.collection != null) ...[
+                        const SizedBox(height: Insets.xxl),
+                        _CollectionRow(collection: detail.collection!),
                       ],
                       if (detail.similar.isNotEmpty) ...[
                         const SizedBox(height: Insets.xxl),
@@ -236,80 +244,86 @@ class _Headline extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompact = MediaQuery.sizeOf(context).width < Breakpoints.compact;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Eyebrow(detail.type.label, color: AppColors.lamp),
-        const SizedBox(height: Insets.xs),
-        Text(
-          detail.title,
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
-          style: AppTypography.displayStyle(size: isCompact ? 32 : 54),
-        ),
-        if (detail.tagline.isNotEmpty) ...[
+    // One selectable region so a reader can sweep from title to credits in a
+    // single drag; the genre chips and action buttons opt out of it.
+    return SelectableCopy(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Eyebrow(detail.type.label, color: AppColors.lamp),
           const SizedBox(height: Insets.xs),
           Text(
-            detail.tagline,
-            maxLines: 2,
+            detail.title,
+            maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.bodyStyle(
-              size: isCompact ? 14 : 16,
-            ),
+            style: AppTypography.displayStyle(size: isCompact ? 32 : 54),
           ),
-        ],
-        const SizedBox(height: Insets.sm),
-        Row(
-          children: [
-            RatingPip(rating: detail.rating, size: 12),
-            if (detail.rating != '—') const SizedBox(width: Insets.sm),
-            Flexible(
-              child: MetaBar(
-                size: 12,
-                entries: [
-                  detail.year,
-                  if (detail.runtime != null) detail.runtime!,
-                  if (detail.seasonSummary != null) detail.seasonSummary!,
-                  if (detail.certification.isNotEmpty) detail.certification,
-                ],
+          if (detail.tagline.isNotEmpty) ...[
+            const SizedBox(height: Insets.xs),
+            Text(
+              detail.tagline,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.bodyStyle(
+                size: isCompact ? 14 : 16,
               ),
             ),
           ],
-        ),
-        const SizedBox(height: Insets.md),
-        if (detail.genres.isNotEmpty)
-          Wrap(
-            spacing: Insets.xs,
-            runSpacing: Insets.xs,
+          const SizedBox(height: Insets.sm),
+          Row(
             children: [
-              for (final genre in detail.genres.take(4))
-                _GenreTag(
-                  label: genre.name,
-                  onTap: () => context.go(
-                    '/${detail.type == MediaType.movie ? 'movies' : 'series'}'
-                    '?genre=${genre.id}',
-                  ),
+              RatingPip(rating: detail.rating, size: 12),
+              if (detail.rating != '—') const SizedBox(width: Insets.sm),
+              Flexible(
+                child: MetaBar(
+                  size: 12,
+                  entries: [
+                    detail.year,
+                    if (detail.runtime != null) detail.runtime!,
+                    if (detail.seasonSummary != null) detail.seasonSummary!,
+                    if (detail.certification.isNotEmpty) detail.certification,
+                  ],
                 ),
+              ),
             ],
           ),
-        const SizedBox(height: Insets.md),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Text(
-            detail.overview.isEmpty
-                ? 'TMDB has no synopsis for this title yet.'
-                : detail.overview,
-            style: AppTypography.bodyStyle(size: isCompact ? 14 : 15.5),
+          const SizedBox(height: Insets.md),
+          if (detail.genres.isNotEmpty)
+            SelectionContainer.disabled(
+              child: Wrap(
+                spacing: Insets.xs,
+                runSpacing: Insets.xs,
+                children: [
+                  for (final genre in detail.genres.take(4))
+                    _GenreTag(
+                      label: genre.name,
+                      onTap: () => context.go(
+                        '/${detail.type == MediaType.movie ? 'movies' : 'series'}'
+                        '?genre=${genre.id}',
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          const SizedBox(height: Insets.md),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Text(
+              detail.overview.isEmpty
+                  ? 'TMDB has no synopsis for this title yet.'
+                  : detail.overview,
+              style: AppTypography.bodyStyle(size: isCompact ? 14 : 15.5),
+            ),
           ),
-        ),
-        if (detail.directors.isNotEmpty || detail.writers.isNotEmpty) ...[
-          const SizedBox(height: Insets.sm),
-          _Credits(detail: detail),
+          if (detail.directors.isNotEmpty || detail.writers.isNotEmpty) ...[
+            const SizedBox(height: Insets.sm),
+            _Credits(detail: detail),
+          ],
+          const SizedBox(height: Insets.lg),
+          SelectionContainer.disabled(child: _Actions(detail: detail)),
         ],
-        const SizedBox(height: Insets.lg),
-        _Actions(detail: detail),
-      ],
+      ),
     );
   }
 }
@@ -390,6 +404,20 @@ class _Actions extends StatelessWidget {
               ),
               label: Text(saved ? 'In my list' : 'My list'),
             ),
+            BlocBuilder<WatchedCubit, WatchedState>(
+              builder: (context, watched) {
+                final seen = watched.contains(item);
+                return OutlinedButton.icon(
+                  onPressed: () => context.read<WatchedCubit>().toggle(item),
+                  icon: Icon(
+                    seen ? Icons.visibility_rounded : Icons.visibility_outlined,
+                    size: 19,
+                    color: seen ? AppColors.lamp : null,
+                  ),
+                  label: Text(seen ? 'Watched' : 'Mark watched'),
+                );
+              },
+            ),
             OutlinedButton.icon(
               onPressed: () => _share(context, detail),
               icon: const Icon(Icons.ios_share_rounded, size: 19),
@@ -414,6 +442,33 @@ class _Actions extends StatelessWidget {
         ),
       );
     }
+  }
+}
+
+/// The films in this movie's franchise, fetched lazily and shown as a row.
+class _CollectionRow extends HookWidget {
+  const _CollectionRow({required this.collection});
+
+  final TitleCollection collection;
+
+  @override
+  Widget build(BuildContext context) {
+    final repository = context.read<TmdbRepository>();
+    final future = useMemoized(
+      () => repository.collectionParts(collection.id),
+      [collection.id],
+    );
+    final snapshot = useFuture(future);
+
+    final parts = snapshot.data ?? const [];
+    // Not worth a row until the franchise has more than just this title.
+    if (parts.length < 2) return const SizedBox.shrink();
+
+    return MediaRow(
+      title: collection.name,
+      items: parts,
+      onSelect: (item) => context.go('/title/${item.type.wire}/${item.id}'),
+    );
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/net_image.dart';
+import 'package:freeplix/core/widgets/selectable_copy.dart';
 import 'package:freeplix/data/models/media_item.dart';
 import 'package:freeplix/shell/view/app_shell.dart';
 
@@ -214,76 +215,80 @@ class _Copy extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          children: [
-            Eyebrow(
-              'Reel ${reelNumber.toString().padLeft(2, '0')}',
-              color: AppColors.lamp,
-            ),
-            const SizedBox(width: Insets.sm),
-            Eyebrow(item.type.label),
-          ],
-        ),
-        const SizedBox(height: Insets.sm),
-        Text(
-          item.title,
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
-          style: AppTypography.displayStyle(
-            size: isCompact ? 40 : 64,
-            letterSpacing: isCompact ? -1.2 : -2.2,
-          ),
-        ),
-        const SizedBox(height: Insets.sm),
-        Row(
-          children: [
-            RatingPip(rating: item.rating, size: 12),
-            if (item.rating != '—') const SizedBox(width: Insets.sm),
-            MetaBar(entries: [item.year], size: 12),
-          ],
-        ),
-        const SizedBox(height: Insets.md),
-        Text(
-          item.overview,
-          maxLines: isCompact ? 3 : 4,
-          overflow: TextOverflow.ellipsis,
-          style: AppTypography.bodyStyle(size: isCompact ? 14 : 16),
-        ),
-        const SizedBox(height: Insets.lg),
-        Wrap(
-          spacing: Insets.sm,
-          runSpacing: Insets.sm,
-          children: [
-            FilledButton.icon(
-              onPressed: onWatch,
-              icon: const Icon(Icons.play_arrow_rounded, size: 22),
-              label: const Text('Watch'),
-            ),
-            OutlinedButton.icon(
-              onPressed: onToggleSave,
-              icon: Icon(
-                isSaved ? Icons.check_rounded : Icons.add_rounded,
-                size: 20,
-                color: isSaved ? AppColors.verdant : null,
+    return SelectableCopy(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Eyebrow(
+                'Reel ${reelNumber.toString().padLeft(2, '0')}',
+                color: AppColors.lamp,
               ),
-              label: Text(isSaved ? 'In my list' : 'My list'),
+              const SizedBox(width: Insets.sm),
+              Eyebrow(item.type.label),
+            ],
+          ),
+          const SizedBox(height: Insets.sm),
+          Text(
+            item.title,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.displayStyle(
+              size: isCompact ? 40 : 64,
+              letterSpacing: isCompact ? -1.2 : -2.2,
             ),
-            OutlinedButton.icon(
-              onPressed: onTrailer,
-              icon: const Icon(Icons.movie_creation_outlined, size: 19),
-              label: const Text('Trailer'),
+          ),
+          const SizedBox(height: Insets.sm),
+          Row(
+            children: [
+              RatingPip(rating: item.rating, size: 12),
+              if (item.rating != '—') const SizedBox(width: Insets.sm),
+              MetaBar(entries: [item.year], size: 12),
+            ],
+          ),
+          const SizedBox(height: Insets.md),
+          Text(
+            item.overview,
+            maxLines: isCompact ? 3 : 4,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.bodyStyle(size: isCompact ? 14 : 16),
+          ),
+          const SizedBox(height: Insets.lg),
+          SelectionContainer.disabled(
+            child: Wrap(
+              spacing: Insets.sm,
+              runSpacing: Insets.sm,
+              children: [
+                FilledButton.icon(
+                  onPressed: onWatch,
+                  icon: const Icon(Icons.play_arrow_rounded, size: 22),
+                  label: const Text('Watch'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onToggleSave,
+                  icon: Icon(
+                    isSaved ? Icons.check_rounded : Icons.add_rounded,
+                    size: 20,
+                    color: isSaved ? AppColors.verdant : null,
+                  ),
+                  label: Text(isSaved ? 'In my list' : 'My list'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onTrailer,
+                  icon: const Icon(Icons.movie_creation_outlined, size: 19),
+                  label: const Text('Trailer'),
+                ),
+                OutlinedButton(
+                  onPressed: onDetails,
+                  child: const Text('Details'),
+                ),
+              ],
             ),
-            OutlinedButton(
-              onPressed: onDetails,
-              child: const Text('Details'),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -79,25 +79,23 @@ class _SearchOverlay extends HookWidget {
       bindings: {const SingleActivator(LogicalKeyboardKey.escape): close},
       child: Material(
         color: AppColors.ink.withValues(alpha: 0.98),
-        child: SelectionArea(
-          child: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isCompact ? Insets.md : Insets.xxl,
-                vertical: isCompact ? Insets.sm : Insets.lg,
-              ),
-              child: Column(
-                children: [
-                  _SearchField(
-                    controller: controller,
-                    focus: focus,
-                    onChanged: cubit.query,
-                    onClose: close,
-                  ),
-                  const SizedBox(height: Insets.md),
-                  Expanded(child: _OverlayResults(onSelect: onSelect)),
-                ],
-              ),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isCompact ? Insets.md : Insets.xxl,
+              vertical: isCompact ? Insets.sm : Insets.lg,
+            ),
+            child: Column(
+              children: [
+                _SearchField(
+                  controller: controller,
+                  focus: focus,
+                  onChanged: cubit.query,
+                  onClose: close,
+                ),
+                const SizedBox(height: Insets.md),
+                Expanded(child: _OverlayResults(onSelect: onSelect)),
+              ],
             ),
           ),
         ),

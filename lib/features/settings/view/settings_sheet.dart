@@ -65,7 +65,7 @@ Future<void> openSettingsSheet(BuildContext context) {
     showDragHandle: true,
     builder: (_) => BlocProvider.value(
       value: cubit,
-      child: const SelectionArea(child: _SettingsSheet()),
+      child: const _SettingsSheet(),
     ),
   );
 }

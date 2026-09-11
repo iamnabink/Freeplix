@@ -7,6 +7,8 @@ import 'package:freeplix/data/models/media_item.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/home/bloc/home_bloc.dart';
 import 'package:freeplix/features/home/widgets/hero_billboard.dart';
+import 'package:freeplix/features/home/widgets/recommended_row.dart';
+import 'package:freeplix/features/home/widgets/upcoming_row.dart';
 import 'package:freeplix/features/watchlist/bloc/watchlist_cubit.dart';
 import 'package:freeplix/features/watchlist/widgets/continue_watching_row.dart';
 import 'package:freeplix/shell/view/app_footer.dart';
@@ -58,6 +60,8 @@ class HomeView extends StatelessWidget {
             // to nothing when it doesn't, so it needs no wrapper here — a
             // wrapper would leave an empty band that pushes the first row down.
             const SliverToBoxAdapter(child: ContinueWatchingRow()),
+            const SliverToBoxAdapter(child: UpcomingRow()),
+            const SliverToBoxAdapter(child: RecommendedRow()),
             SliverPadding(
               padding: const EdgeInsets.only(top: Insets.xl),
               sliver: SliverList.separated(

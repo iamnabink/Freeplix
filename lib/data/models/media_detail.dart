@@ -5,6 +5,7 @@ import 'package:freeplix/data/models/image_size.dart';
 import 'package:freeplix/data/models/media_item.dart';
 import 'package:freeplix/data/models/media_type.dart';
 import 'package:freeplix/data/models/season.dart';
+import 'package:freeplix/data/models/title_collection.dart';
 import 'package:freeplix/data/models/video.dart';
 
 /// Everything the detail screen needs, folded out of a single
@@ -33,6 +34,9 @@ class MediaDetail extends Equatable {
     this.status = '',
     this.homepage = '',
     this.certification = '',
+    this.collection,
+    this.nextEpisodeAirDate,
+    this.nextEpisodeLabel,
   });
 
   factory MediaDetail.fromJson(
@@ -69,6 +73,13 @@ class MediaDetail extends Equatable {
       status: json['status'] as String? ?? '',
       homepage: json['homepage'] as String? ?? '',
       certification: _certification(json, type),
+      nextEpisodeAirDate: _nextEpisodeDate(json),
+      nextEpisodeLabel: _nextEpisodeLabel(json),
+      collection: json['belongs_to_collection'] == null
+          ? null
+          : TitleCollection.fromJson(
+              json['belongs_to_collection'] as Map<String, dynamic>,
+            ),
       genres:
           (json['genres'] as List<dynamic>?)
               ?.whereType<Map<String, dynamic>>()
@@ -128,6 +139,11 @@ class MediaDetail extends Equatable {
   final String status;
   final String homepage;
   final String certification;
+  final TitleCollection? collection;
+
+  /// When the next unaired episode airs (TV only), and its `S02 · E03` label.
+  final DateTime? nextEpisodeAirDate;
+  final String? nextEpisodeLabel;
   final List<Genre> genres;
   final List<CastMember> cast;
   final List<CrewMember> crew;
@@ -201,6 +217,22 @@ class MediaDetail extends Equatable {
     voteAverage: voteAverage,
     releaseDate: releaseDate,
   );
+
+  static DateTime? _nextEpisodeDate(Map<String, dynamic> json) {
+    final next = json['next_episode_to_air'] as Map<String, dynamic>?;
+    final date = next?['air_date'] as String?;
+    return date == null || date.isEmpty ? null : DateTime.tryParse(date);
+  }
+
+  static String? _nextEpisodeLabel(Map<String, dynamic> json) {
+    final next = json['next_episode_to_air'] as Map<String, dynamic>?;
+    if (next == null) return null;
+    final season = next['season_number'] as int?;
+    final episode = next['episode_number'] as int?;
+    if (season == null || episode == null) return null;
+    return 'S${season.toString().padLeft(2, '0')} · '
+        'E${episode.toString().padLeft(2, '0')}';
+  }
 
   static String _certification(Map<String, dynamic> json, MediaType type) {
     if (type == MediaType.tv) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:freeplix/core/theme/app_colors.dart';
 import 'package:freeplix/core/theme/app_spacing.dart';
@@ -6,6 +7,7 @@ import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
 import 'package:freeplix/core/widgets/net_image.dart';
 import 'package:freeplix/data/models/media_item.dart';
+import 'package:freeplix/features/watchlist/bloc/watched_cubit.dart';
 
 /// A title in the gate. Resting, it is a quiet 2:3 poster behind a hairline.
 /// Under the pointer it lifts, the hairline warms to the lamp, and its
@@ -27,6 +29,9 @@ class PosterCard extends HookWidget {
     final hovered = useState(false);
     final focused = useState(false);
     final active = hovered.value || focused.value;
+    final watched = context.select<WatchedCubit, bool>(
+      (cubit) => cubit.state.contains(item),
+    );
 
     return Semantics(
       button: true,
@@ -75,8 +80,10 @@ class PosterCard extends HookWidget {
                           fit: StackFit.expand,
                           children: [
                             NetImage(url: item.poster()),
+                            if (watched && !active) const _WatchedScrim(),
                             _RatingCorner(item: item, visible: active),
                             _PlayVeil(visible: active),
+                            _WatchedBadge(visible: watched),
                           ],
                         ),
                       ),
@@ -176,6 +183,47 @@ class _PlayVeil extends StatelessWidget {
                 color: AppColors.ink,
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Dims a poster the viewer has already seen, so watched titles recede.
+class _WatchedScrim extends StatelessWidget {
+  const _WatchedScrim();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(color: AppColors.ink.withValues(alpha: 0.5));
+  }
+}
+
+/// A small "seen" tick in the top-right corner of a watched poster.
+class _WatchedBadge extends StatelessWidget {
+  const _WatchedBadge({required this.visible});
+
+  final bool visible;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: Insets.xs,
+      right: Insets.xs,
+      child: AnimatedScale(
+        duration: Motion.base,
+        scale: visible ? 1 : 0,
+        child: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: const BoxDecoration(
+            color: AppColors.lamp,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.check_rounded,
+            size: 12,
+            color: AppColors.ink,
           ),
         ),
       ),
