@@ -113,6 +113,18 @@ abstract final class Presets {
       label: 'Coming of age',
       keyword: KeywordRef(id: 10683, name: 'coming of age'),
     ),
+    DiscoveryPreset(
+      label: 'Date night',
+      keyword: KeywordRef(id: 254464, name: 'date night'),
+    ),
+    DiscoveryPreset(
+      label: 'Erotic thrillers',
+      keyword: KeywordRef(id: 207767, name: 'erotic thriller'),
+    ),
+    DiscoveryPreset(
+      label: 'Feel-good',
+      keyword: KeywordRef(id: 275276, name: 'feelgood'),
+    ),
   ];
 
   static const studios = [
