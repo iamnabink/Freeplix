@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:freeplix/core/theme/app_colors.dart';
 import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/wordmark.dart';
+import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/search/view/search_overlay.dart';
+import 'package:freeplix/features/settings/bloc/settings_cubit.dart';
 import 'package:freeplix/features/settings/view/settings_sheet.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
@@ -141,6 +144,7 @@ class _CompactBar extends StatelessWidget {
                 child: const Wordmark(size: 19),
               ),
               const Spacer(),
+              const _SurpriseButton(compact: true),
               IconButton(
                 tooltip: 'Search Freeplix',
                 onPressed: () => openSearchOverlay(context),
@@ -191,6 +195,8 @@ class _TopRail extends StatelessWidget {
                   active: _isActive(destination.path, location),
                 ),
               const Spacer(),
+              const _SurpriseButton(),
+              const SizedBox(width: Insets.xs),
               _SearchAffordance(active: location.startsWith('/search')),
               const SizedBox(width: Insets.md),
               const _AvatarButton(size: 34),
@@ -223,6 +229,58 @@ class _AvatarButton extends StatelessWidget {
             child: UserAvatar(size: size),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Opens a random title — a "Surprise me" pick from what's trending.
+class _SurpriseButton extends HookWidget {
+  const _SurpriseButton({this.compact = false});
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final loading = useState(false);
+
+    Future<void> surprise() async {
+      if (loading.value) return;
+      final router = GoRouter.of(context);
+      final messenger = ScaffoldMessenger.of(context);
+      final repository = context.read<TmdbRepository>();
+      final genreIds = context.read<SettingsCubit>().state.genreIds;
+      loading.value = true;
+      try {
+        final pick = await repository.surprise(genreIds: genreIds);
+        if (pick != null) {
+          router.go('/title/${pick.type.wire}/${pick.id}');
+        } else {
+          messenger.showSnackBar(
+            const SnackBar(
+              content: Text('Nothing to surprise you with right now.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    return Tooltip(
+      message: 'Surprise me',
+      child: IconButton(
+        onPressed: loading.value ? null : surprise,
+        color: AppColors.screen,
+        iconSize: compact ? 22 : 20,
+        icon: loading.value
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.shuffle_rounded),
       ),
     );
   }

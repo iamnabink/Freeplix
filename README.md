@@ -61,10 +61,23 @@ to keep in sync.
   theatres, what's on the air, and what's coming.
 - **Browse** — the full TMDB catalogue for films and series, a page at a time
   behind a **Load more** button.
-- **Search** — one debounced multi-search across films and series.
+- **Search** — one debounced multi-search across films and series, in a
+  full-page floating overlay that opens over wherever you are (Esc to close).
 - **Details** — synopsis, cast, crew, certification, runtime, genres,
-  season-by-season episode listings, and recommendations.
+  season-by-season episode listings, and recommendations. Tap a **director or
+  writer** to browse everything they made; a movie in a franchise shows its
+  whole **collection** (oldest first).
 - **My list** — saved titles, kept in your browser's local storage.
+- **Watched** — mark a title as seen; watched posters carry a check and a home
+  rail suggests more **because you added** what's newest in your list.
+- **Coming up** — the next episode of each series in your list that has one
+  scheduled, soonest first.
+- **Profile & settings** — a local avatar (name, accent colour), a **default
+  playback source** applied to every title, and **favourite genres** that
+  tailor the "Surprise me" pick. All on-device; no account.
+- **Surprise me** — one tap opens a random title, biased to your favourite
+  genres when you've set some.
+- **Share** — hand a title's link to the native share sheet, or copy it.
 - **Jump back in** — the home page offers back whatever you last opened in the
   player, down to the episode for a series. The player runs cross-origin so
   its position cannot be read; this records what was opened, not a percentage.

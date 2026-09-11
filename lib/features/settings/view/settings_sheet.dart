@@ -6,6 +6,28 @@ import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/features/settings/bloc/settings_cubit.dart';
 
+/// A curated set of TMDB movie genres for the "Surprise me" preference,
+/// as (id, label) pairs.
+const kSurpriseGenres = <(int, String)>[
+  (28, 'Action'),
+  (12, 'Adventure'),
+  (16, 'Animation'),
+  (35, 'Comedy'),
+  (80, 'Crime'),
+  (99, 'Documentary'),
+  (18, 'Drama'),
+  (10751, 'Family'),
+  (14, 'Fantasy'),
+  (36, 'History'),
+  (27, 'Horror'),
+  (9648, 'Mystery'),
+  (10749, 'Romance'),
+  (878, 'Sci-Fi'),
+  (53, 'Thriller'),
+  (10752, 'War'),
+  (37, 'Western'),
+];
+
 /// Accents a viewer can give their avatar. The first is the default.
 const kAccentPalette = <int>[
   0xFFFFC24B, // lamp
@@ -63,8 +85,10 @@ Future<void> openSettingsSheet(BuildContext context) {
     backgroundColor: AppColors.soot,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (_) =>
-        BlocProvider.value(value: cubit, child: const _SettingsSheet()),
+    builder: (_) => BlocProvider.value(
+      value: cubit,
+      child: const _SettingsSheet(),
+    ),
   );
 }
 
@@ -221,7 +245,81 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   );
                 },
               ),
+            const SizedBox(height: Insets.xl),
+
+            const _Label('Favourite genres'),
+            const SizedBox(height: Insets.xs),
+            Text(
+              'Tailors your "Surprise me" pick to what you like.',
+              style: AppTypography.bodyStyle(
+                size: 12.5,
+                color: AppColors.screenDim,
+              ),
+            ),
+            const SizedBox(height: Insets.sm),
+            BlocBuilder<SettingsCubit, SettingsState>(
+              buildWhen: (a, b) => a.genreIds != b.genreIds,
+              builder: (context, state) => Wrap(
+                spacing: Insets.xs,
+                runSpacing: Insets.xs,
+                children: [
+                  for (final genre in kSurpriseGenres)
+                    _GenreChip(
+                      label: genre.$2,
+                      selected: state.genreIds.contains(genre.$1),
+                      onTap: () => cubit.toggleGenre(genre.$1),
+                    ),
+                ],
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GenreChip extends StatelessWidget {
+  const _GenreChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Insets.sm,
+              vertical: 8,
+            ),
+            decoration: BoxDecoration(
+              color: selected ? AppColors.lamp : AppColors.ink,
+              borderRadius: BorderRadius.circular(Radii.sm),
+              border: Border.all(
+                color: selected ? AppColors.lamp : AppColors.ash,
+              ),
+            ),
+            child: Text(
+              label,
+              style: AppTypography.bodyStyle(
+                size: 13,
+                weight: 600,
+                color: selected ? AppColors.ink : AppColors.screen,
+              ),
+            ),
+          ),
         ),
       ),
     );

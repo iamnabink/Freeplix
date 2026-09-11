@@ -5,9 +5,11 @@ import 'package:freeplix/core/theme/app_theme.dart';
 import 'package:freeplix/data/repositories/settings_repository.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/data/repositories/watch_progress_repository.dart';
+import 'package:freeplix/data/repositories/watched_repository.dart';
 import 'package:freeplix/data/repositories/watchlist_repository.dart';
 import 'package:freeplix/features/settings/bloc/settings_cubit.dart';
 import 'package:freeplix/features/watchlist/bloc/continue_watching_cubit.dart';
+import 'package:freeplix/features/watchlist/bloc/watched_cubit.dart';
 import 'package:freeplix/features/watchlist/bloc/watchlist_cubit.dart';
 import 'package:freeplix/l10n/l10n.dart';
 import 'package:go_router/go_router.dart';
@@ -45,6 +47,11 @@ class _AppState extends State<App> {
           BlocProvider(
             create: (_) => SettingsCubit(
               repository: SettingsRepository(widget.preferences),
+            ),
+          ),
+          BlocProvider(
+            create: (_) => WatchedCubit(
+              repository: WatchedRepository(widget.preferences),
             ),
           ),
         ],

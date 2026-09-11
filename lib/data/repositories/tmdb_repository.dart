@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:freeplix/core/network/tmdb_client.dart';
 import 'package:freeplix/data/models/discovery_refs.dart';
 import 'package:freeplix/data/models/genre.dart';
@@ -40,9 +42,40 @@ class TmdbRepository {
   final _genreCache = <MediaType, List<Genre>>{};
   final _providerCache = <String, List<WatchProviderRef>>{};
   final _personCache = <int, PersonRef>{};
+  final _collectionCache = <int, List<MediaItem>>{};
 
   Future<MediaPage> trending({String window = 'week', int page = 1}) =>
       _page('/trending/all/$window', page: page);
+
+  final _random = Random();
+
+  /// A random title worth watching, for the "Surprise me" pick. When the
+  /// viewer has favourite [genreIds], it discovers a random popular film in
+  /// one of them; otherwise it pulls from what's trending. Null only if TMDB
+  /// returns nothing at all.
+  Future<MediaItem?> surprise({List<int> genreIds = const []}) async {
+    if (genreIds.isNotEmpty) {
+      final genre = genreIds[_random.nextInt(genreIds.length)];
+      final result = await _page(
+        '/discover/movie',
+        page: 1 + _random.nextInt(5),
+        fallbackType: MediaType.movie,
+        query: {
+          'with_genres': '$genre',
+          'sort_by': 'popularity.desc',
+          'vote_count.gte': 100,
+        },
+      );
+      final pool = result.items.where((e) => e.posterPath != null).toList();
+      if (pool.isNotEmpty) return pool[_random.nextInt(pool.length)];
+      // Fall through to trending if the genre came back empty.
+    }
+
+    final result = await trending(page: 1 + _random.nextInt(5));
+    final pool = result.items.where((e) => e.posterPath != null).toList();
+    if (pool.isEmpty) return null;
+    return pool[_random.nextInt(pool.length)];
+  }
 
   Future<MediaPage> movies(MovieFeed feed, {int page = 1}) =>
       _page('/movie/${feed.path}', page: page, fallbackType: MediaType.movie);
@@ -175,6 +208,39 @@ class TmdbRepository {
       query: {'append_to_response': append},
     );
     return _detailCache[key] = MediaDetail.fromJson(json, type: type);
+  }
+
+  /// Titles TMDB recommends for a given title — used for "Because you added…".
+  Future<MediaPage> recommendations(MediaType type, int id, {int page = 1}) =>
+      _page(
+        '/${type.wire}/$id/recommendations',
+        page: page,
+        fallbackType: type,
+      );
+
+  /// The films in a franchise (TMDB `belongs_to_collection`), oldest first.
+  Future<List<MediaItem>> collectionParts(int collectionId) async {
+    final cached = _collectionCache[collectionId];
+    if (cached != null) return cached;
+
+    final json = await _client.get('/collection/$collectionId');
+    final parts =
+        (json['parts'] as List<dynamic>?)
+            ?.whereType<Map<String, dynamic>>()
+            .map((e) => MediaItem.fromJson(e, fallbackType: MediaType.movie))
+            .where((e) => e.posterPath != null)
+            .toList() ??
+        <MediaItem>[];
+
+    return _collectionCache[collectionId] = parts
+      ..sort((a, b) {
+        final ad = a.releaseDate;
+        final bd = b.releaseDate;
+        if (ad == null && bd == null) return 0;
+        if (ad == null) return 1;
+        if (bd == null) return -1;
+        return ad.compareTo(bd);
+      });
   }
 
   Future<List<Episode>> episodes(int tvId, int seasonNumber) async {

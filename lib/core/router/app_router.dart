@@ -32,6 +32,7 @@ GoRouter createRouter() {
                 type: MediaType.movie,
                 genreId: _intParam(state.uri.queryParameters['genre']),
                 castId: _intParam(state.uri.queryParameters['cast']),
+                castName: state.uri.queryParameters['name'],
               ),
             ),
           ),

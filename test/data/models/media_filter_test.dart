@@ -93,15 +93,17 @@ void main() {
       expect(query['with_runtime.lte'], 90);
     });
 
-    test('cast is sent for films but withheld for series', () {
+    test('people are sent for films but withheld for series', () {
       final filter = MediaFilter(
         cast: {const PersonRef(id: 6384, name: 'Keanu Reeves')},
       );
 
-      expect(filter.toQuery(MediaType.movie)['with_cast'], '6384');
-      // TMDB ignores with_cast on /discover/tv, returning the unfiltered set,
-      // so sending it would quietly promise filtering that never happens.
-      expect(filter.toQuery(MediaType.tv).containsKey('with_cast'), isFalse);
+      // with_people matches cast or crew, so it carries directors and writers
+      // too, not only actors.
+      expect(filter.toQuery(MediaType.movie)['with_people'], '6384');
+      // TMDB ignores it on /discover/tv, returning the unfiltered set, so
+      // sending it would quietly promise filtering that never happens.
+      expect(filter.toQuery(MediaType.tv).containsKey('with_people'), isFalse);
     });
 
     test('clearing keeps the region but drops the service', () {

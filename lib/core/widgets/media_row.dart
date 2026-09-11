@@ -109,18 +109,27 @@ class _RowHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Flexible(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.headlineSmall,
-            overflow: TextOverflow.ellipsis,
+        // Title and "See all" stay left; the Expanded soaks up the middle so
+        // the nudge buttons pin flush to the right end of the row. (A Flexible
+        // title beside a Spacer leaves its slack after the buttons, which
+        // pushes them inward on wide screens.)
+        Expanded(
+          child: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (onSeeAll != null) ...[
+                const SizedBox(width: Insets.sm),
+                TextButton(onPressed: onSeeAll, child: const Text('See all')),
+              ],
+            ],
           ),
         ),
-        if (onSeeAll != null) ...[
-          const SizedBox(width: Insets.sm),
-          TextButton(onPressed: onSeeAll, child: const Text('See all')),
-        ],
-        const Spacer(),
         if (MediaQuery.sizeOf(context).width >= Breakpoints.compact)
           AnimatedOpacity(
             duration: Motion.fast,

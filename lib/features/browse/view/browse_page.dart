@@ -25,14 +25,19 @@ class BrowsePage extends StatelessWidget {
     required this.type,
     this.genreId,
     this.castId,
+    this.castName,
     super.key,
   });
 
   final MediaType type;
   final int? genreId;
 
-  /// Set when a cast member was tapped on a details page.
+  /// Set when a cast member or film-maker was tapped on a details page.
   final int? castId;
+
+  /// The name that was tapped, shown as the filter chip straight away instead
+  /// of waiting on a lookup (and instead of the nearest keyword).
+  final String? castName;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +49,7 @@ class BrowsePage extends StatelessWidget {
           type: type,
           initialFilter: MediaFilter(genreIds: {?genreId}),
           initialCastId: castId,
+          initialCastName: castName,
         );
         unawaited(cubit.start());
         return cubit;
@@ -245,6 +251,15 @@ class _ActiveFilters extends StatelessWidget {
               label: genre.name,
               onRemove: () => cubit.removeGenre(genre.id),
             ),
+          for (final person in filter.cast)
+            ActiveFilterChip(
+              label: person.name,
+              onRemove: () => cubit.applyFilter(
+                filter.copyWith(
+                  cast: filter.cast.where((p) => p.id != person.id).toSet(),
+                ),
+              ),
+            ),
           if (languageLabel != null)
             ActiveFilterChip(
               label: languageLabel,
@@ -360,6 +375,7 @@ class _DiscoveryPresets extends StatelessWidget {
           state.filter.copyWith(
             keywords: {if (preset.keyword != null) preset.keyword!},
             companies: {if (preset.company != null) preset.company!},
+            genreIds: {if (preset.genreId != null) preset.genreId!},
           ),
         ),
       );

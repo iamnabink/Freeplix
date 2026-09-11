@@ -195,8 +195,10 @@ class MediaFilter extends Equatable {
       // dominate any rating-based ordering.
       'vote_count.gte': sort == SortOption.rated ? 200 : 50,
       if (genreIds.isNotEmpty) 'with_genres': genreIds.join(','),
+      // `with_people` matches a person's cast *or* crew credits, so this same
+      // filter carries a tapped director or writer, not just actors.
       if (cast.isNotEmpty && type == MediaType.movie)
-        'with_cast': cast.map((p) => p.id).join(','),
+        'with_people': cast.map((p) => p.id).join(','),
       if (keywords.isNotEmpty)
         'with_keywords': keywords.map((k) => k.id).join(','),
       if (companies.isNotEmpty)

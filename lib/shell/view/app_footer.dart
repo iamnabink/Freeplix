@@ -7,6 +7,7 @@ import 'package:freeplix/core/theme/app_colors.dart';
 import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/meta_bar.dart';
+import 'package:freeplix/core/widgets/selectable_copy.dart';
 import 'package:freeplix/core/widgets/sprocket_rail.dart';
 import 'package:freeplix/core/widgets/wordmark.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
@@ -86,23 +87,52 @@ class _Identity extends StatelessWidget {
         const SizedBox(height: Insets.xs),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
-          child: Text(
-            'An open source catalogue for films and series, built for '
-            'learning. MIT licensed, with no accounts and no tracking.',
-            style: AppTypography.bodyStyle(size: 13.5),
+          child: SelectableCopy(
+            child: Text(
+              'An open source catalogue for films and series, built for '
+              'purely educational & learning purposes. MIT licensed, with no accounts and no tracking.',
+              style: AppTypography.bodyStyle(size: 13.5),
+            ),
           ),
         ),
         const SizedBox(height: Insets.md),
-        const Row(
+        const Wrap(
+          spacing: Insets.lg,
+          runSpacing: Insets.xs,
           children: [
-            Eyebrow('Built by'),
-            SizedBox(width: Insets.xs),
-            _TextLink(
-              label: AppConfig.authorName,
+            _Credit(
+              label: 'Built by',
+              name: AppConfig.authorName,
               url: AppConfig.authorUrl,
+            ),
+            _Credit(
+              label: 'Inspired by',
+              name: AppConfig.inspiredByName,
+              url: AppConfig.inspiredByUrl,
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// An eyebrow label followed by a linked name, e.g. "Built by · Nabraj Khadka".
+class _Credit extends StatelessWidget {
+  const _Credit({required this.label, required this.name, required this.url});
+
+  final String label;
+  final String name;
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Eyebrow(label),
+        const SizedBox(width: Insets.xs),
+        _TextLink(label: name, url: url),
       ],
     );
   }
@@ -145,28 +175,30 @@ class _Attribution extends StatelessWidget {
       children: [
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 620),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                AppConfig.purposeNotice,
-                style: AppTypography.monoStyle(
-                  size: 10,
-                  letterSpacing: 0.8,
+          child: SelectableCopy(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  AppConfig.purposeNotice,
+                  style: AppTypography.monoStyle(
+                    size: 10,
+                    letterSpacing: 0.8,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 5),
-              // Wording required by TMDB's terms of use.
-              Text(
-                AppConfig.tmdbAttribution,
-                style: AppTypography.monoStyle(
-                  size: 10,
-                  letterSpacing: 0.8,
-                  color: AppColors.screenDim,
+                const SizedBox(height: 5),
+                // Wording required by TMDB's terms of use.
+                Text(
+                  AppConfig.tmdbAttribution,
+                  style: AppTypography.monoStyle(
+                    size: 10,
+                    letterSpacing: 0.8,
+                    color: AppColors.screenDim,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const _TextLink(

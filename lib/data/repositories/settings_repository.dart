@@ -8,6 +8,7 @@ class SettingsRepository {
   static const _nameKey = 'freeplix.profile.name.v1';
   static const _accentKey = 'freeplix.profile.accent.v1';
   static const _defaultSourceKey = 'freeplix.settings.defaultSource.v1';
+  static const _genresKey = 'freeplix.settings.genres.v1';
 
   final SharedPreferences _prefs;
 
@@ -27,4 +28,13 @@ class SettingsRepository {
   Future<void> saveDefaultSource(String? id) => id == null
       ? _prefs.remove(_defaultSourceKey)
       : _prefs.setString(_defaultSourceKey, id);
+
+  /// Favourite TMDB genre ids, used to bias the "Surprise me" pick.
+  List<int> loadGenres() => (_prefs.getStringList(_genresKey) ?? const [])
+      .map(int.tryParse)
+      .whereType<int>()
+      .toList();
+
+  Future<void> saveGenres(List<int> ids) =>
+      _prefs.setStringList(_genresKey, ids.map((e) => '$e').toList());
 }
