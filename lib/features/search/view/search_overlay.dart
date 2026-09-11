@@ -77,44 +77,26 @@ class _SearchOverlay extends HookWidget {
 
     return CallbackShortcuts(
       bindings: {const SingleActivator(LogicalKeyboardKey.escape): close},
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: isCompact ? Insets.md : Insets.xl,
-            vertical: isCompact ? Insets.sm : Insets.xl,
-          ),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 760,
-                maxHeight: viewport.height * (isCompact ? 0.92 : 0.82),
+      child: Material(
+        color: AppColors.ink.withValues(alpha: 0.98),
+        child: SelectionArea(
+          child: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isCompact ? Insets.md : Insets.xxl,
+                vertical: isCompact ? Insets.sm : Insets.lg,
               ),
-              child: Material(
-                color: AppColors.soot,
-                borderRadius: BorderRadius.circular(Radii.lg),
-                clipBehavior: Clip.antiAlias,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Radii.lg),
-                    border: Border.all(color: AppColors.ash),
+              child: Column(
+                children: [
+                  _SearchField(
+                    controller: controller,
+                    focus: focus,
+                    onChanged: cubit.query,
+                    onClose: close,
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _SearchField(
-                        controller: controller,
-                        focus: focus,
-                        onChanged: cubit.query,
-                        onClose: close,
-                      ),
-                      const Divider(height: 1, color: AppColors.ash),
-                      Flexible(
-                        child: _OverlayResults(onSelect: onSelect),
-                      ),
-                    ],
-                  ),
-                ),
+                  const SizedBox(height: Insets.md),
+                  Expanded(child: _OverlayResults(onSelect: onSelect)),
+                ],
               ),
             ),
           ),
@@ -139,51 +121,41 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Insets.md,
-        Insets.sm,
-        Insets.xs,
-        Insets.sm,
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.search_rounded,
-            size: 22,
-            color: AppColors.screenDim,
-          ),
-          const SizedBox(width: Insets.sm),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              focusNode: focus,
-              autofocus: true,
-              textInputAction: TextInputAction.search,
-              style: AppTypography.bodyStyle(
-                size: 16,
-                color: AppColors.emulsion,
-              ),
-              cursorColor: AppColors.lamp,
-              decoration: InputDecoration(
-                isCollapsed: true,
-                border: InputBorder.none,
-                hintText: 'Search titles, franchises, or characters',
-                hintStyle: AppTypography.bodyStyle(
-                  size: 16,
-                  color: AppColors.screenDim,
-                ),
-              ),
-              onChanged: onChanged,
-            ),
-          ),
-          IconButton(
-            tooltip: 'Close',
-            onPressed: onClose,
-            icon: const Icon(Icons.close_rounded, size: 20),
-            color: AppColors.screen,
-          ),
-        ],
+    // A single underline field — no fill, no rectangle — so the search bar
+    // reads as a line the reader writes on, not a boxed control.
+    return TextField(
+      controller: controller,
+      focusNode: focus,
+      autofocus: true,
+      textInputAction: TextInputAction.search,
+      style: AppTypography.bodyStyle(size: 18, color: AppColors.emulsion),
+      cursorColor: AppColors.lamp,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        filled: false,
+        hintText: 'Search titles, franchises, or characters',
+        hintStyle: AppTypography.bodyStyle(
+          size: 18,
+          color: AppColors.screenDim,
+        ),
+        prefixIcon: const Icon(
+          Icons.search_rounded,
+          size: 24,
+          color: AppColors.screenDim,
+        ),
+        suffixIcon: IconButton(
+          tooltip: 'Close',
+          onPressed: onClose,
+          icon: const Icon(Icons.close_rounded, size: 20),
+          color: AppColors.screen,
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: Insets.md),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.ash),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.lamp, width: 2),
+        ),
       ),
     );
   }
@@ -201,7 +173,6 @@ class _OverlayResults extends StatelessWidget {
         const padding = EdgeInsets.all(Insets.md);
 
         return CustomScrollView(
-          shrinkWrap: true,
           slivers: [
             switch (state.status) {
               SearchStatus.idle => const SliverToBoxAdapter(

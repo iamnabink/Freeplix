@@ -63,8 +63,10 @@ Future<void> openSettingsSheet(BuildContext context) {
     backgroundColor: AppColors.soot,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (_) =>
-        BlocProvider.value(value: cubit, child: const _SettingsSheet()),
+    builder: (_) => BlocProvider.value(
+      value: cubit,
+      child: const SelectionArea(child: _SettingsSheet()),
+    ),
   );
 }
 

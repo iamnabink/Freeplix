@@ -28,6 +28,10 @@ abstract final class AppConfig {
   static const authorName = 'Nabraj Khadka';
   static const authorHandle = 'iamnabink';
 
+  static const inspiredByName = 'Nimisha Bohara';
+  static const inspiredByUrl =
+      'https://www.linkedin.com/in/ar-nimisha-bohara-5a13731a5/';
+
   /// Required by TMDB's terms of use — the wording is theirs, not ours.
   static const tmdbAttribution =
       'This product uses the TMDB API but is not endorsed or certified by TMDB.';

@@ -66,6 +66,10 @@ class HeroBillboard extends HookWidget {
               children: [
                 AnimatedSwitcher(
                   duration: Motion.slow,
+                  layoutBuilder: (currentChild, previousChildren) => Stack(
+                    fit: StackFit.expand,
+                    children: [...previousChildren, ?currentChild],
+                  ),
                   child: NetImage(
                     key: ValueKey(item.id),
                     url: item.backdrop(),
@@ -117,10 +121,10 @@ class HeroBillboard extends HookWidget {
       );
     }
 
-    final height = (MediaQuery.sizeOf(context).height * 0.66).clamp(
-      430.0,
-      600.0,
-    );
+    // Match the details view banner exactly (a fixed 520), so the first row
+    // sits at the same place and the fold behaves the same on both screens,
+    // instead of a viewport fraction that can grow tall enough to swallow it.
+    const height = 520.0;
 
     return SizedBox(
       height: height,
@@ -130,6 +134,13 @@ class HeroBillboard extends HookWidget {
         children: [
           AnimatedSwitcher(
             duration: Motion.slow,
+            // Expand the crossfade's children, or the image falls back to its
+            // intrinsic width under loose constraints and floats in the middle
+            // with black gutters on a wide window instead of filling the frame.
+            layoutBuilder: (currentChild, previousChildren) => Stack(
+              fit: StackFit.expand,
+              children: [...previousChildren, ?currentChild],
+            ),
             child: NetImage(
               key: ValueKey(item.id),
               url: item.backdrop(),

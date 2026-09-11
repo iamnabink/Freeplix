@@ -93,16 +93,43 @@ class _Identity extends StatelessWidget {
           ),
         ),
         const SizedBox(height: Insets.md),
-        const Row(
+        const Wrap(
+          spacing: Insets.lg,
+          runSpacing: Insets.xs,
           children: [
-            Eyebrow('Built by'),
-            SizedBox(width: Insets.xs),
-            _TextLink(
-              label: AppConfig.authorName,
+            _Credit(
+              label: 'Built by',
+              name: AppConfig.authorName,
               url: AppConfig.authorUrl,
+            ),
+            _Credit(
+              label: 'Inspired by',
+              name: AppConfig.inspiredByName,
+              url: AppConfig.inspiredByUrl,
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// An eyebrow label followed by a linked name, e.g. "Built by · Nabraj Khadka".
+class _Credit extends StatelessWidget {
+  const _Credit({required this.label, required this.name, required this.url});
+
+  final String label;
+  final String name;
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Eyebrow(label),
+        const SizedBox(width: Insets.xs),
+        _TextLink(label: name, url: url),
       ],
     );
   }

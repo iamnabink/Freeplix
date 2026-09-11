@@ -54,12 +54,10 @@ class HomeView extends StatelessWidget {
               )
             else
               const SliverToBoxAdapter(child: SizedBox(height: Insets.xl)),
-            const SliverToBoxAdapter(
-              child: PagePadding(
-                vertical: Insets.xl,
-                child: ContinueWatchingRow(),
-              ),
-            ),
+            // ContinueWatchingRow pads itself when it has entries and shrinks
+            // to nothing when it doesn't, so it needs no wrapper here — a
+            // wrapper would leave an empty band that pushes the first row down.
+            const SliverToBoxAdapter(child: ContinueWatchingRow()),
             SliverPadding(
               padding: const EdgeInsets.only(top: Insets.xl),
               sliver: SliverList.separated(

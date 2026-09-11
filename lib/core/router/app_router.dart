@@ -18,7 +18,12 @@ GoRouter createRouter() {
     errorBuilder: (context, state) => const NotFoundPage(),
     routes: [
       ShellRoute(
-        builder: (context, state, child) => AppShell(child: child),
+        // SelectionArea makes static text selectable like a web page. It lives
+        // here, inside the route's Overlay, because SelectableRegion needs an
+        // Overlay ancestor — MaterialApp.builder sits above the Navigator and
+        // cannot provide one.
+        builder: (context, state, child) =>
+            SelectionArea(child: AppShell(child: child)),
         routes: [
           GoRoute(
             path: '/',
@@ -81,12 +86,14 @@ GoRouter createRouter() {
           if (id == null) return _fade(state, const NotFoundPage());
           return _fade(
             state,
-            WatchPage(
-              type: MediaType.fromWire(state.pathParameters['type']),
-              id: id,
-              season: _intParam(state.uri.queryParameters['s']),
-              episode: _intParam(state.uri.queryParameters['e']),
-              trailer: state.uri.queryParameters['trailer'] == '1',
+            SelectionArea(
+              child: WatchPage(
+                type: MediaType.fromWire(state.pathParameters['type']),
+                id: id,
+                season: _intParam(state.uri.queryParameters['s']),
+                episode: _intParam(state.uri.queryParameters['e']),
+                trailer: state.uri.queryParameters['trailer'] == '1',
+              ),
             ),
           );
         },
