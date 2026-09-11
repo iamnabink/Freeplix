@@ -4,6 +4,7 @@ import 'package:freeplix/core/theme/app_colors.dart';
 import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/wordmark.dart';
+import 'package:freeplix/features/search/view/search_overlay.dart';
 import 'package:freeplix/features/settings/view/settings_sheet.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
@@ -94,7 +95,7 @@ class AppShell extends HookWidget {
       bottomNavigationBar: isCompact ? _BottomBar(location: location) : null,
       floatingActionButton: isCompact
           ? FloatingActionButton.small(
-              onPressed: () => context.go('/search'),
+              onPressed: () => openSearchOverlay(context),
               backgroundColor: AppColors.lamp,
               foregroundColor: AppColors.ink,
               tooltip: 'Search',
@@ -142,7 +143,7 @@ class _CompactBar extends StatelessWidget {
               const Spacer(),
               IconButton(
                 tooltip: 'Search Freeplix',
-                onPressed: () => context.go('/search'),
+                onPressed: () => openSearchOverlay(context),
                 icon: const Icon(Icons.search_rounded, size: 22),
                 color: AppColors.screen,
               ),
@@ -305,7 +306,7 @@ class _SearchAffordance extends StatelessWidget {
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
-          onTap: () => context.go('/search'),
+          onTap: () => openSearchOverlay(context),
           child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: Insets.sm,

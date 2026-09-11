@@ -7,7 +7,7 @@ import 'package:web/web.dart' as web;
 
 /// The subset of `ShareData` we hand to `navigator.share`.
 extension type _ShareData._(JSObject _) implements JSObject {
-  external factory _ShareData({String? title, String? text, String? url});
+  external factory _ShareData({String? title, String? url});
 }
 
 /// Resolves [path] against the document base, so a sub-path deploy (e.g.
@@ -26,9 +26,12 @@ Future<ShareResult> shareOrCopy({
   final navigator = web.window.navigator as JSObject;
   if (navigator.has('share')) {
     try {
+      // Pass the name as the share *title* (subject) only — never as `text`,
+      // which many targets glue onto the URL as "text url", corrupting the
+      // link into ".../125988 Silo (2023)".
       final promise = navigator.callMethod<JSPromise>(
         'share'.toJS,
-        _ShareData(title: text, text: text, url: url),
+        _ShareData(title: text, url: url),
       );
       await promise.toDart;
     } on Object catch (_) {
