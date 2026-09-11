@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freeplix/core/router/app_router.dart';
 import 'package:freeplix/core/theme/app_theme.dart';
+import 'package:freeplix/data/repositories/settings_repository.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/data/repositories/watch_progress_repository.dart';
 import 'package:freeplix/data/repositories/watchlist_repository.dart';
+import 'package:freeplix/features/settings/bloc/settings_cubit.dart';
 import 'package:freeplix/features/watchlist/bloc/continue_watching_cubit.dart';
 import 'package:freeplix/features/watchlist/bloc/watchlist_cubit.dart';
 import 'package:freeplix/l10n/l10n.dart';
@@ -38,6 +40,11 @@ class _AppState extends State<App> {
           BlocProvider(
             create: (_) => ContinueWatchingCubit(
               repository: WatchProgressRepository(widget.preferences),
+            ),
+          ),
+          BlocProvider(
+            create: (_) => SettingsCubit(
+              repository: SettingsRepository(widget.preferences),
             ),
           ),
         ],

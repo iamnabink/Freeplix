@@ -17,6 +17,7 @@ import 'package:freeplix/data/models/media_type.dart';
 import 'package:freeplix/data/repositories/tmdb_repository.dart';
 import 'package:freeplix/features/details/bloc/details_cubit.dart';
 import 'package:freeplix/features/details/widgets/episode_list.dart';
+import 'package:freeplix/features/settings/bloc/settings_cubit.dart';
 import 'package:freeplix/features/watch/bloc/watch_cubit.dart';
 import 'package:freeplix/features/watchlist/bloc/continue_watching_cubit.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
@@ -57,6 +58,10 @@ class WatchPage extends StatelessWidget {
               season: season,
               episode: episode,
               trailer: trailer,
+              preferredSourceId: context
+                  .read<SettingsCubit>()
+                  .state
+                  .defaultSourceId,
             );
             unawaited(cubit.load());
             return cubit;
@@ -454,6 +459,8 @@ class _BelowStage extends StatelessWidget {
           const Eyebrow('Playing'),
           const SizedBox(height: Insets.xs),
           _PlaybackSwitcher(state: state),
+          const SizedBox(height: Insets.xs),
+          _DefaultSourceHint(state: state),
           const SizedBox(height: Insets.sm),
         ],
         if (state.sources.isNotEmpty) const _SourceAdsNotice(),
@@ -477,6 +484,10 @@ class _PlaybackSwitcher extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<WatchCubit>();
     final onSource = state.kind == PlaybackKind.source;
+    final defaultSourceId = context
+        .watch<SettingsCubit>()
+        .state
+        .defaultSourceId;
 
     return Wrap(
       spacing: Insets.xs,
@@ -487,6 +498,7 @@ class _PlaybackSwitcher extends StatelessWidget {
             label: state.sources[i].name,
             icon: Icons.play_arrow_rounded,
             selected: onSource && i == state.sourceIndex,
+            isDefault: state.sources[i].id == defaultSourceId,
             onTap: () => cubit.selectSource(i),
           ),
         if (state.hasTrailer)
@@ -507,6 +519,7 @@ class _PlaybackChip extends StatelessWidget {
     required this.icon,
     required this.selected,
     required this.onTap,
+    this.isDefault = false,
   });
 
   final String label;
@@ -514,50 +527,109 @@ class _PlaybackChip extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
+  /// Marks the viewer's chosen default source, which every title starts on.
+  final bool isDefault;
+
   @override
   Widget build(BuildContext context) {
+    final foreground = selected ? AppColors.ink : AppColors.screen;
+
     return Semantics(
       button: true,
       selected: selected,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: onTap,
-          child: AnimatedContainer(
-            duration: Motion.fast,
-            padding: const EdgeInsets.symmetric(
-              horizontal: Insets.sm,
-              vertical: 8,
-            ),
-            decoration: BoxDecoration(
-              color: selected ? AppColors.lamp : AppColors.soot,
-              borderRadius: BorderRadius.circular(Radii.sm),
-              border: Border.all(
-                color: selected ? AppColors.lamp : AppColors.ash,
+      label: isDefault ? '$label, your default source' : label,
+      child: Tooltip(
+        message: isDefault ? 'Your default source' : label,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: onTap,
+            child: AnimatedContainer(
+              duration: Motion.fast,
+              padding: const EdgeInsets.symmetric(
+                horizontal: Insets.sm,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: selected ? AppColors.lamp : AppColors.soot,
+                borderRadius: BorderRadius.circular(Radii.sm),
+                border: Border.all(
+                  color: selected ? AppColors.lamp : AppColors.ash,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    size: 16,
+                    color: selected ? AppColors.ink : AppColors.screenDim,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    label,
+                    style: AppTypography.bodyStyle(
+                      size: 13,
+                      weight: 600,
+                      color: foreground,
+                    ),
+                  ),
+                  if (isDefault) ...[
+                    const SizedBox(width: 5),
+                    Icon(Icons.star_rounded, size: 14, color: foreground),
+                  ],
+                ],
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tells the viewer which source is their saved default (the one every title
+/// starts on) — shown only when they have set one that this build still offers.
+class _DefaultSourceHint extends StatelessWidget {
+  const _DefaultSourceHint({required this.state});
+
+  final WatchState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final defaultId = context.watch<SettingsCubit>().state.defaultSourceId;
+    if (defaultId == null) return const SizedBox.shrink();
+
+    final source = state.sources.where((s) => s.id == defaultId).firstOrNull;
+    if (source == null) return const SizedBox.shrink();
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.star_rounded, size: 14, color: AppColors.lamp),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text.rich(
+            TextSpan(
+              style: AppTypography.bodyStyle(
+                size: 12,
+                color: AppColors.screenDim,
+              ),
               children: [
-                Icon(
-                  icon,
-                  size: 16,
-                  color: selected ? AppColors.ink : AppColors.screenDim,
+                TextSpan(
+                  text: source.name,
+                  style: AppTypography.bodyStyle(size: 12, weight: 600),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: AppTypography.bodyStyle(
-                    size: 13,
-                    weight: 600,
-                    color: selected ? AppColors.ink : AppColors.screen,
-                  ),
+                const TextSpan(
+                  text:
+                      ' is your default source — every title starts here. '
+                      'Change it from Profile & settings.',
                 ),
               ],
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:freeplix/core/theme/app_colors.dart';
 import 'package:freeplix/core/theme/app_spacing.dart';
 import 'package:freeplix/core/theme/app_typography.dart';
 import 'package:freeplix/core/widgets/wordmark.dart';
+import 'package:freeplix/features/settings/view/settings_sheet.dart';
 import 'package:freeplix/shell/view/page_padding.dart';
 import 'package:go_router/go_router.dart';
 
@@ -145,6 +146,8 @@ class _CompactBar extends StatelessWidget {
                 icon: const Icon(Icons.search_rounded, size: 22),
                 color: AppColors.screen,
               ),
+              const SizedBox(width: Insets.xs),
+              const _AvatarButton(size: 30),
             ],
           ),
         ),
@@ -188,7 +191,35 @@ class _TopRail extends StatelessWidget {
                 ),
               const Spacer(),
               _SearchAffordance(active: location.startsWith('/search')),
+              const SizedBox(width: Insets.md),
+              const _AvatarButton(size: 34),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The profile avatar in the header. Tapping it opens the settings sheet,
+/// where the viewer sets their name, accent, and default playback source.
+class _AvatarButton extends StatelessWidget {
+  const _AvatarButton({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Profile & settings',
+      child: Semantics(
+        button: true,
+        label: 'Profile and settings',
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () => openSettingsSheet(context),
+            child: UserAvatar(size: size),
           ),
         ),
       ),
