@@ -29,6 +29,7 @@ class ContinueWatchingCubit extends Cubit<ContinueWatchingState> {
     MediaDetail detail, {
     int? season,
     int? episode,
+    String? sourceId,
     DateTime? at,
   }) async {
     final entry = WatchProgress(
@@ -40,6 +41,7 @@ class ContinueWatchingCubit extends Cubit<ContinueWatchingState> {
       backdropPath: detail.backdropPath,
       season: detail.type == MediaType.tv ? season : null,
       episode: detail.type == MediaType.tv ? episode : null,
+      sourceId: sourceId,
     );
 
     final next = [

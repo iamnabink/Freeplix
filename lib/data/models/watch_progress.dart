@@ -18,6 +18,7 @@ class WatchProgress extends Equatable {
     this.backdropPath,
     this.season,
     this.episode,
+    this.sourceId,
   });
 
   factory WatchProgress.fromJson(Map<String, dynamic> json) => WatchProgress(
@@ -29,6 +30,7 @@ class WatchProgress extends Equatable {
     backdropPath: json['backdrop'] as String?,
     season: json['s'] as int?,
     episode: json['e'] as int?,
+    sourceId: json['src'] as String?,
   );
 
   final int id;
@@ -39,6 +41,10 @@ class WatchProgress extends Equatable {
   final String? backdropPath;
   final int? season;
   final int? episode;
+
+  /// The playback source the viewer last watched on, so resuming lands on the
+  /// same one rather than the build's default.
+  final String? sourceId;
 
   String get key => '${type.wire}/$id';
 
@@ -74,6 +80,7 @@ class WatchProgress extends Equatable {
     'backdrop': backdropPath,
     's': season,
     'e': episode,
+    'src': sourceId,
   };
 
   @override
