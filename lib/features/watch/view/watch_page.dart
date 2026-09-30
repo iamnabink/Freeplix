@@ -47,6 +47,20 @@ class WatchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final repository = context.read<TmdbRepository>();
 
+    // Resume where the viewer left off: when the route names no episode (e.g.
+    // the "Watch" button on details), fall back to the last-watched season and
+    // episode for this series. An explicit episode in the URL always wins.
+    final resume = (type == MediaType.tv && !trailer)
+        ? context
+              .read<ContinueWatchingCubit>()
+              .state
+              .entries
+              .where((e) => e.type == type && e.id == id)
+              .firstOrNull
+        : null;
+    final startSeason = season ?? resume?.season;
+    final startEpisode = episode ?? resume?.episode;
+
     return MultiBlocProvider(
       key: ValueKey('watch-${type.wire}-$id-$trailer'),
       providers: [
@@ -56,8 +70,8 @@ class WatchPage extends StatelessWidget {
               repository: repository,
               type: type,
               id: id,
-              season: season,
-              episode: episode,
+              season: startSeason,
+              episode: startEpisode,
               trailer: trailer,
               preferredSourceId: context
                   .read<SettingsCubit>()
@@ -74,6 +88,7 @@ class WatchPage extends StatelessWidget {
               repository: repository,
               type: type,
               id: id,
+              initialSeason: startSeason,
             );
             unawaited(cubit.load());
             return cubit;
@@ -770,6 +785,11 @@ class _EpisodePicker extends StatelessWidget {
               episodes: details.episodes,
               isLoading: details.isLoadingEpisodes,
               onPlay: context.read<WatchCubit>().selectEpisode,
+              // Mark the playing episode, but only while its own season is
+              // the one being browsed.
+              playingEpisodeNumber: details.selectedSeason == state.season
+                  ? state.episode
+                  : null,
             ),
           ],
         );

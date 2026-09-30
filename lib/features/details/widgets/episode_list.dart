@@ -97,12 +97,17 @@ class EpisodeList extends StatelessWidget {
     required this.episodes,
     required this.isLoading,
     required this.onPlay,
+    this.playingEpisodeNumber,
     super.key,
   });
 
   final List<Episode> episodes;
   final bool isLoading;
   final ValueChanged<Episode> onPlay;
+
+  /// The episode currently playing in this season, marked "Now playing".
+  /// Null when no episode of the shown season is playing.
+  final int? playingEpisodeNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +137,7 @@ class EpisodeList extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: Insets.sm),
             child: _EpisodeTile(
               episode: episode,
+              isPlaying: episode.episodeNumber == playingEpisodeNumber,
               onPlay: () => onPlay(episode),
             ),
           ),
@@ -141,14 +147,20 @@ class EpisodeList extends StatelessWidget {
 }
 
 class _EpisodeTile extends HookWidget {
-  const _EpisodeTile({required this.episode, required this.onPlay});
+  const _EpisodeTile({
+    required this.episode,
+    required this.onPlay,
+    this.isPlaying = false,
+  });
 
   final Episode episode;
   final VoidCallback onPlay;
+  final bool isPlaying;
 
   @override
   Widget build(BuildContext context) {
     final hovered = useState(false);
+    final active = hovered.value || isPlaying;
     final isCompact = MediaQuery.sizeOf(context).width < Breakpoints.compact;
 
     return MouseRegion(
@@ -161,10 +173,12 @@ class _EpisodeTile extends HookWidget {
           duration: Motion.fast,
           padding: const EdgeInsets.all(Insets.sm),
           decoration: BoxDecoration(
-            color: hovered.value ? AppColors.soot2 : AppColors.soot,
+            color: active ? AppColors.soot2 : AppColors.soot,
             borderRadius: BorderRadius.circular(Radii.md),
             border: Border.all(
-              color: hovered.value ? AppColors.screenDim : AppColors.ash,
+              color: isPlaying
+                  ? AppColors.lamp
+                  : (hovered.value ? AppColors.screenDim : AppColors.ash),
             ),
           ),
           child: Row(
@@ -177,7 +191,7 @@ class _EpisodeTile extends HookWidget {
                   style: AppTypography.monoStyle(
                     size: 18,
                     weight: FontWeight.w700,
-                    color: hovered.value ? AppColors.lamp : AppColors.screenDim,
+                    color: active ? AppColors.lamp : AppColors.screenDim,
                   ),
                 ),
               ),
@@ -209,11 +223,13 @@ class _EpisodeTile extends HookWidget {
                     const SizedBox(height: 3),
                     MetaBar(
                       entries: [
+                        if (isPlaying) 'Now playing',
                         if (episode.runtime != null) '${episode.runtime}m',
                         if (episode.airDate != null) '${episode.airDate!.year}',
                         if (!episode.hasAired) 'Unaired',
                       ],
                       size: 10,
+                      color: isPlaying ? AppColors.lamp : AppColors.screen,
                     ),
                     if (episode.overview.isNotEmpty) ...[
                       const SizedBox(height: Insets.xs),
@@ -229,8 +245,10 @@ class _EpisodeTile extends HookWidget {
               ),
               const SizedBox(width: Insets.sm),
               Icon(
-                Icons.play_circle_outline_rounded,
-                color: hovered.value ? AppColors.lamp : AppColors.screenDim,
+                isPlaying
+                    ? Icons.play_circle_filled_rounded
+                    : Icons.play_circle_outline_rounded,
+                color: active ? AppColors.lamp : AppColors.screenDim,
               ),
             ],
           ),

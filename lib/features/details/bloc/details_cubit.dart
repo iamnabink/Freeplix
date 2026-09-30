@@ -59,11 +59,16 @@ class DetailsCubit extends Cubit<DetailsState> {
     required this._repository,
     required this.type,
     required this.id,
+    this.initialSeason,
   }) : super(const DetailsState());
 
   final TmdbRepository _repository;
   final MediaType type;
   final int id;
+
+  /// The season to open on, when known — e.g. the season being played, or the
+  /// one the viewer last left off at. Falls back to the first real season.
+  final int? initialSeason;
 
   Future<void> load() async {
     emit(state.copyWith(status: DetailsStatus.loading));
@@ -71,11 +76,12 @@ class DetailsCubit extends Cubit<DetailsState> {
       final detail = await _repository.detail(type, id);
       emit(state.copyWith(status: DetailsStatus.ready, detail: detail));
 
-      // Series open on their first real season, episodes already loading.
-      final firstSeason = detail.seasons
-          .where((s) => s.seasonNumber > 0)
-          .firstOrNull;
-      if (firstSeason != null) await selectSeason(firstSeason.seasonNumber);
+      // Open on the requested season when it exists, else the first real one.
+      final seasons = detail.seasons.where((s) => s.seasonNumber > 0);
+      final opening =
+          seasons.where((s) => s.seasonNumber == initialSeason).firstOrNull ??
+          seasons.firstOrNull;
+      if (opening != null) await selectSeason(opening.seasonNumber);
     } on ApiException catch (error) {
       emit(
         state.copyWith(status: DetailsStatus.failure, error: error.message),
