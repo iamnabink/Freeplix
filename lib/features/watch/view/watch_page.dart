@@ -47,19 +47,21 @@ class WatchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final repository = context.read<TmdbRepository>();
 
-    // Resume where the viewer left off: when the route names no episode (e.g.
-    // the "Watch" button on details), fall back to the last-watched season and
-    // episode for this series. An explicit episode in the URL always wins.
-    final resume = (type == MediaType.tv && !trailer)
-        ? context
+    // Resume where the viewer left off: the last-watched season/episode for a
+    // series, and the source they were on. An explicit episode in the URL
+    // always wins; a saved source falls back to the viewer's default.
+    final resume = trailer
+        ? null
+        : context
               .read<ContinueWatchingCubit>()
               .state
               .entries
               .where((e) => e.type == type && e.id == id)
-              .firstOrNull
-        : null;
+              .firstOrNull;
     final startSeason = season ?? resume?.season;
     final startEpisode = episode ?? resume?.episode;
+    final startSourceId =
+        resume?.sourceId ?? context.read<SettingsCubit>().state.defaultSourceId;
 
     return MultiBlocProvider(
       key: ValueKey('watch-${type.wire}-$id-$trailer'),
@@ -73,10 +75,7 @@ class WatchPage extends StatelessWidget {
               season: startSeason,
               episode: startEpisode,
               trailer: trailer,
-              preferredSourceId: context
-                  .read<SettingsCubit>()
-                  .state
-                  .defaultSourceId,
+              preferredSourceId: startSourceId,
             );
             unawaited(cubit.load());
             return cubit;
@@ -156,11 +155,12 @@ class _RecordProgress extends HookWidget {
             detail,
             season: state.season,
             episode: state.episode,
+            sourceId: state.activeSource?.id,
           ),
         );
       }
       return null;
-    }, [detail?.id, state.season, state.episode]);
+    }, [detail?.id, state.season, state.episode, state.activeSource?.id]);
 
     return child;
   }
